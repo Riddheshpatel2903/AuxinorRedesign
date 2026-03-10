@@ -20,7 +20,7 @@
 
   <!-- LOADER -->
   <div id="loader">
-    <div class="ld-logo">Auxinor <em>Chem</em></div>
+    <div class="ld-logo"><img src="logo.jpg" alt="Auxinor Chem" class="ld-logo-img"></div>
     <div class="ld-bar">
       <div class="ld-fill"></div>
     </div>
@@ -50,7 +50,7 @@
 
   <!-- NAV -->
   <nav id="nav">
-    <div class="nav-logo">Auxinor <em>Chem</em></div>
+    <div class="nav-logo"><img src="logo.jpg" alt="Auxinor Chem" class="nav-logo-img"></div>
     <ul class="nav-links">
       <li><a onclick="goTo(0)">Home</a></li>
       <li><a onclick="goTo(1)">About</a></li>
@@ -64,9 +64,9 @@
 
   <!-- SCENE 0: ENTRANCE -->
   <div class="slabel on" id="s0">
-    <span class="stag">Ahmedabad, Gujarat — Est. 2009</span>
-    <h1>India's Trusted<br /><em>Chemical</em> Partner</h1>
-    <p>From Ahmedabad to every Indian state — trading, warehousing and distributing industrial chemicals.</p>
+    <span class="stag">Auxinor Chemicals</span>
+    <h1>Delivering<br /><em>Excellence</em></h1>
+    <p>Your trusted partner in delivering excellence in the world of chemicals. Sourcing, quality, and distribution.</p>
     <div class="brow">
       <button class="bsolid" onclick="goTo(2)">Explore Products</button>
       <button class="boutline" onclick="goTo(3)">Our Facility</button>
@@ -93,22 +93,21 @@
 
   <!-- SCENE 1: ABOUT -->
   <div class="slabel" id="s1">
-    <span class="stag">About the Company</span>
+    <span class="stag">About Us</span>
     <h1>Where Chemistry<br /><em>Meets</em> Industry</h1>
-    <p>A complete chemical supply operation — sourcing, quality verification, storage and pan-India dispatch under one
-      roof.</p>
+    <p>Welcome to Auxinor Chemicals. We specialize in the procurement and distribution of surplus products, giving you a
+      competitive advantage.</p>
   </div>
   <div class="ipanel" id="ip1">
     <div class="ip-tag">Company Profile</div>
-    <div class="ip-title">Auxinor Chem Pvt. Ltd.</div>
-    <div class="ip-body">Headquartered in Ahmedabad's chemical hub, we serve manufacturers and industries with reliable,
-      quality-assured chemical supply.</div>
+    <div class="ip-title">Auxinor Chemicals</div>
+    <div class="ip-body">Over 7 years, we've prioritized customer satisfaction through honesty, accountability.</div>
     <ul class="ip-list">
       <li>Direct manufacturer sourcing</li>
-      <li>Batch quality verification</li>
-      <li>MSDS documentation provided</li>
+      <li>Procurement & distribution of surplus</li>
+      <li>Tailored trade recommendations</li>
       <li>Dedicated logistics support</li>
-      <li>Regulatory compliance</li>
+      <li>Market insights & updates</li>
     </ul>
   </div>
 
@@ -116,38 +115,50 @@
   <div class="slabel" id="s2">
     <span class="stag">Chemical Portfolio</span>
     <h1>Industrial<br /><em>Chemicals</em></h1>
+    <div class="pgrid" id="pgrid">
+      <div class="pcell" onclick="viewCategory('GLYCOLS')">
+        <div class="pf">GLYCOLS</div>
+        <div class="pn">MEG / DEG / PG</div>
+        <div class="pu">Mono & Di-Ethylene, Propylene Glycol</div>
+      </div>
+      <div class="pcell" onclick="viewCategory('MONOMERS')">
+        <div class="pf">MONOMERS</div>
+        <div class="pn">Styrene Monomer</div>
+        <div class="pu">Plastics · Resins · Elastomers</div>
+      </div>
+      <div class="pcell" onclick="viewCategory('SOLVENTS')">
+        <div class="pf">SOLVENTS</div>
+        <div class="pn">Industrial Solvents</div>
+        <div class="pu">Manufacturing · Processing</div>
+      </div>
+      <div class="pcell" onclick="viewCategory('ACRYLATES')">
+        <div class="pf">ACRYLATES</div>
+        <div class="pn">Acrylates / Monomers</div>
+        <div class="pu">Coatings · Adhesives</div>
+      </div>
+      <div class="pcell" onclick="viewCategory('AROMATICS')">
+        <div class="pf">AROMATICS</div>
+        <div class="pn">Hydrocarbons</div>
+        <div class="pu">Chemical Intermediates</div>
+      </div>
+      <div class="pcell" onclick="viewCategory('OXO')">
+        <div class="pf">OXO</div>
+        <div class="pn">Oxo Alcohols</div>
+        <div class="pu">Plasticizers · Solvents</div>
+      </div>
+    </div>
   </div>
-  <div class="pgrid" id="pgrid">
-    <div class="pcell">
-      <div class="pf">H₂SO₄</div>
-      <div class="pn">Sulphuric Acid</div>
-      <div class="pu">Fertilizers · Batteries · Pickling</div>
-    </div>
-    <div class="pcell">
-      <div class="pf">HCl</div>
-      <div class="pn">Hydrochloric Acid</div>
-      <div class="pu">Steel pickling · PVC · pH control</div>
-    </div>
-    <div class="pcell">
-      <div class="pf">NaOH</div>
-      <div class="pn">Sodium Hydroxide</div>
-      <div class="pu">Soap · Paper · Textiles</div>
-    </div>
-    <div class="pcell">
-      <div class="pf">CH₃COOH</div>
-      <div class="pn">Acetic Acid</div>
-      <div class="pu">Plastics · Food · Solvents</div>
-    </div>
-    <div class="pcell">
-      <div class="pf">NH₃</div>
-      <div class="pn">Ammonia</div>
-      <div class="pu">Fertilizers · Refrigerants</div>
-    </div>
-    <div class="pcell">
-      <div class="pf">H₂O₂</div>
-      <div class="pn">Hydrogen Peroxide</div>
-      <div class="pu">Bleaching · Disinfection</div>
-    </div>
+
+  <!-- PRODUCT SIDEBAR (Dynamic for Scene 3) -->
+  <div class="ipanel" id="product-sidebar">
+    <div class="ip-tag" id="ps-tag">Category</div>
+    <div class="ip-title" id="ps-title">Products</div>
+    <div class="ip-body">Select a product below for specific chemical details.</div>
+    <ul class="ip-list ps-dynamic" id="ps-list">
+      <!-- Generated via JS -->
+    </ul>
+    <button class="boutline" style="margin-top: 1.5rem; width: 100%; border-color: rgba(43,92,122,0.3); color: #2b5c7a;"
+      onclick="backToProducts()">Back to Portfolio</button>
   </div>
 
   <!-- SCENE 3: WAREHOUSE -->
@@ -158,7 +169,7 @@
   </div>
   <div class="ipanel" id="ip3">
     <div class="ip-tag">Storage Facility — Vatva, Ahmedabad</div>
-    <div class="ip-title">Certified Chemical Godown</div>
+    <div class="ip-title">Certified Godown</div>
     <div class="ip-body">Purpose-built chemical storage with full hazmat segregation and compliance infrastructure.
     </div>
     <ul class="ip-list">
@@ -176,20 +187,15 @@
     <span class="stag">Market Sectors</span>
     <h1>Industries<br /><em>We Serve</em></h1>
     <p>Supplying critical chemicals across India's most vital industrial sectors.</p>
-  </div>
-  <div class="icloud" id="icloud">
-    <div class="ipill">Pharmaceuticals</div>
-    <div class="ipill">Agriculture</div>
-    <div class="ipill">Textiles</div>
-    <div class="ipill">Manufacturing</div>
-    <div class="ipill">Water Treatment</div>
-    <div class="ipill">Food Processing</div>
-    <div class="ipill">Petrochemicals</div>
-    <div class="ipill">Rubber & Plastics</div>
-    <div class="ipill">Paper & Pulp</div>
-    <div class="ipill">Construction</div>
-    <div class="ipill">Electronics</div>
-    <div class="ipill">Paints & Coatings</div>
+
+    <div class="icloud" id="icloud">
+      <div class="ipill">Speciality Chemicals</div>
+      <div class="ipill">Petrochemicals</div>
+      <div class="ipill">Pharmaceuticals</div>
+      <div class="ipill">Dyes & Intermediates</div>
+      <div class="ipill">Agrochemicals</div>
+      <div class="ipill">Food Industries</div>
+    </div>
   </div>
 
   <!-- SCENE 5: CONTACT -->
@@ -198,10 +204,10 @@
     <div class="cinfo">
       <h3>Let's Work Together</h3>
       <p>Reach our team for bulk orders, product inquiries, or logistics coordination across India.</p>
-      <div class="cdet"><span class="cl">Headquarters</span><span class="cv">Ahmedabad, Gujarat 380001</span></div>
-      <div class="cdet"><span class="cl">Warehouse</span><span class="cv">Vatva Industrial Area, Ahmedabad</span></div>
+      <div class="cdet"><span class="cl">Headquarters</span><span class="cv">D 502 Ganesh Glory 11</span></div>
+      <div class="cdet"><span class="cl">Address</span><span class="cv">Gota, Ahmedabad, 382470</span></div>
       <div class="cdet"><span class="cl">Email</span><span class="cv">info@auxinorchem.com</span></div>
-      <div class="cdet"><span class="cl">Hours</span><span class="cv">Mon–Sat, 9am – 6:30pm IST</span></div>
+      <div class="cdet"><span class="cl">Phone</span><span class="cv">+91 990 990 7230 / 7231</span></div>
     </div>
     <div class="cform">
       <div class="row">
@@ -225,12 +231,35 @@
 
   <!-- FOOTER -->
   <div id="ftr">
-    <div class="flogo">Auxinor Chem</div>
-    <div class="fcopy">© 2024 Auxinor Chem Pvt. Ltd. — Ahmedabad, India</div>
+    <div class="flogo">Auxinor Chemicals</div>
+    <div class="fcopy">© 2024 Auxinor Chemicals — Ahmedabad, India</div>
   </div>
 
   <!-- TALL SCROLL DRIVER -->
   <div style="height:600vh;position:relative;z-index:-1"></div>
+
+  <!-- PRODUCT MODAL -->
+  <div id="product-modal" class="modal">
+    <div class="modal-bg" onclick="closeModal()"></div>
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      <div class="modal-tag" id="pm-tag">Category</div>
+      <h2 id="pm-title">Product Name</h2>
+      <p id="pm-desc">Placeholder description for the product.</p>
+      <div class="pm-specs">
+        <div class="pm-spec">
+          <span class="cl">Grade</span>
+          <span class="cv">Industrial / High-Purity</span>
+        </div>
+        <div class="pm-spec">
+          <span class="cl">Packaging</span>
+          <span class="cv">Drums, ISO Tanks, Bulk</span>
+        </div>
+      </div>
+      <button class="bsolid" style="width: 100%; margin-top: 1.5rem;" onclick="goTo(5); closeModal();">Request
+        Quote</button>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
