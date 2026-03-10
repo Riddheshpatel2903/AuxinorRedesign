@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Auxinor Chem Pvt. Ltd.</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div id="cur"></div>
+  <div id="cur-ring"></div>
+  <div class="toast" id="toast">Inquiry sent — we'll be in touch</div>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="ld-logo">Auxinor <em>Chem</em></div>
+    <div class="ld-bar">
+      <div class="ld-fill"></div>
+    </div>
+    <div class="ld-txt">Loading facility...</div>
+  </div>
+
+  <canvas id="world-canvas"></canvas>
+  <div id="fog"></div>
+
+  <!-- PROGRESS DOTS -->
+  <div class="pdots" id="pdots">
+    <div class="pd on" data-i="0" title="Entrance"></div>
+    <div class="pd" data-i="1" title="About"></div>
+    <div class="pd" data-i="2" title="Products"></div>
+    <div class="pd" data-i="3" title="Warehouse"></div>
+    <div class="pd" data-i="4" title="Industries"></div>
+    <div class="pd" data-i="5" title="Contact"></div>
+  </div>
+
+  <!-- SCROLL LINE -->
+  <div class="scroll-line">
+    <div class="scroll-prog" id="sprog"></div>
+  </div>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb" id="bc">Auxinor Chem · Entrance</div>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <div class="nav-logo">Auxinor <em>Chem</em></div>
+    <ul class="nav-links">
+      <li><a onclick="goTo(0)">Home</a></li>
+      <li><a onclick="goTo(1)">About</a></li>
+      <li><a onclick="goTo(2)">Products</a></li>
+      <li><a onclick="goTo(3)">Warehouse</a></li>
+      <li><a onclick="goTo(4)">Industries</a></li>
+      <li><a onclick="goTo(5)">Contact</a></li>
+    </ul>
+    <button class="nav-cta" onclick="goTo(5)">Get Quote</button>
+  </nav>
+
+  <!-- SCENE 0: ENTRANCE -->
+  <div class="slabel on" id="s0">
+    <span class="stag">Ahmedabad, Gujarat — Est. 2009</span>
+    <h1>India's Trusted<br /><em>Chemical</em> Partner</h1>
+    <p>From Ahmedabad to every Indian state — trading, warehousing and distributing industrial chemicals.</p>
+    <div class="brow">
+      <button class="bsolid" onclick="goTo(2)">Explore Products</button>
+      <button class="boutline" onclick="goTo(3)">Our Facility</button>
+    </div>
+  </div>
+  <div class="stats-bar on" id="stbar">
+    <div class="st">
+      <div class="st-n">500+</div>
+      <div class="st-l">Products</div>
+    </div>
+    <div class="st">
+      <div class="st-n">28</div>
+      <div class="st-l">States</div>
+    </div>
+    <div class="st">
+      <div class="st-n">15yr</div>
+      <div class="st-l">Experience</div>
+    </div>
+    <div class="st">
+      <div class="st-n">ISO</div>
+      <div class="st-l">Certified</div>
+    </div>
+  </div>
+
+  <!-- SCENE 1: ABOUT -->
+  <div class="slabel" id="s1">
+    <span class="stag">About the Company</span>
+    <h1>Where Chemistry<br /><em>Meets</em> Industry</h1>
+    <p>A complete chemical supply operation — sourcing, quality verification, storage and pan-India dispatch under one
+      roof.</p>
+  </div>
+  <div class="ipanel" id="ip1">
+    <div class="ip-tag">Company Profile</div>
+    <div class="ip-title">Auxinor Chem Pvt. Ltd.</div>
+    <div class="ip-body">Headquartered in Ahmedabad's chemical hub, we serve manufacturers and industries with reliable,
+      quality-assured chemical supply.</div>
+    <ul class="ip-list">
+      <li>Direct manufacturer sourcing</li>
+      <li>Batch quality verification</li>
+      <li>MSDS documentation provided</li>
+      <li>Dedicated logistics support</li>
+      <li>Regulatory compliance</li>
+    </ul>
+  </div>
+
+  <!-- SCENE 2: PRODUCTS -->
+  <div class="slabel" id="s2">
+    <span class="stag">Chemical Portfolio</span>
+    <h1>Industrial<br /><em>Chemicals</em></h1>
+  </div>
+  <div class="pgrid" id="pgrid">
+    <div class="pcell">
+      <div class="pf">H₂SO₄</div>
+      <div class="pn">Sulphuric Acid</div>
+      <div class="pu">Fertilizers · Batteries · Pickling</div>
+    </div>
+    <div class="pcell">
+      <div class="pf">HCl</div>
+      <div class="pn">Hydrochloric Acid</div>
+      <div class="pu">Steel pickling · PVC · pH control</div>
+    </div>
+    <div class="pcell">
+      <div class="pf">NaOH</div>
+      <div class="pn">Sodium Hydroxide</div>
+      <div class="pu">Soap · Paper · Textiles</div>
+    </div>
+    <div class="pcell">
+      <div class="pf">CH₃COOH</div>
+      <div class="pn">Acetic Acid</div>
+      <div class="pu">Plastics · Food · Solvents</div>
+    </div>
+    <div class="pcell">
+      <div class="pf">NH₃</div>
+      <div class="pn">Ammonia</div>
+      <div class="pu">Fertilizers · Refrigerants</div>
+    </div>
+    <div class="pcell">
+      <div class="pf">H₂O₂</div>
+      <div class="pn">Hydrogen Peroxide</div>
+      <div class="pu">Bleaching · Disinfection</div>
+    </div>
+  </div>
+
+  <!-- SCENE 3: WAREHOUSE -->
+  <div class="slabel" id="s3">
+    <span class="stag">Storage Infrastructure</span>
+    <h1>50,000 sq.ft.<br /><em>Warehouse</em></h1>
+    <p>Segregated chemical zones, RFID tracking, fire suppression and 24/7 monitoring.</p>
+  </div>
+  <div class="ipanel" id="ip3">
+    <div class="ip-tag">Storage Facility — Vatva, Ahmedabad</div>
+    <div class="ip-title">Certified Chemical Godown</div>
+    <div class="ip-body">Purpose-built chemical storage with full hazmat segregation and compliance infrastructure.
+    </div>
+    <ul class="ip-list">
+      <li>50,000+ sq.ft. certified space</li>
+      <li>Temperature controlled zones</li>
+      <li>Hazmat segregation protocols</li>
+      <li>RFID inventory management</li>
+      <li>ISO 9001 certified</li>
+      <li>24/7 CCTV monitoring</li>
+    </ul>
+  </div>
+
+  <!-- SCENE 4: INDUSTRIES -->
+  <div class="slabel" id="s4">
+    <span class="stag">Market Sectors</span>
+    <h1>Industries<br /><em>We Serve</em></h1>
+    <p>Supplying critical chemicals across India's most vital industrial sectors.</p>
+  </div>
+  <div class="icloud" id="icloud">
+    <div class="ipill">Pharmaceuticals</div>
+    <div class="ipill">Agriculture</div>
+    <div class="ipill">Textiles</div>
+    <div class="ipill">Manufacturing</div>
+    <div class="ipill">Water Treatment</div>
+    <div class="ipill">Food Processing</div>
+    <div class="ipill">Petrochemicals</div>
+    <div class="ipill">Rubber & Plastics</div>
+    <div class="ipill">Paper & Pulp</div>
+    <div class="ipill">Construction</div>
+    <div class="ipill">Electronics</div>
+    <div class="ipill">Paints & Coatings</div>
+  </div>
+
+  <!-- SCENE 5: CONTACT -->
+  <div class="slabel" id="s5"></div>
+  <div class="cbox" id="cbox">
+    <div class="cinfo">
+      <h3>Let's Work Together</h3>
+      <p>Reach our team for bulk orders, product inquiries, or logistics coordination across India.</p>
+      <div class="cdet"><span class="cl">Headquarters</span><span class="cv">Ahmedabad, Gujarat 380001</span></div>
+      <div class="cdet"><span class="cl">Warehouse</span><span class="cv">Vatva Industrial Area, Ahmedabad</span></div>
+      <div class="cdet"><span class="cl">Email</span><span class="cv">info@auxinorchem.com</span></div>
+      <div class="cdet"><span class="cl">Hours</span><span class="cv">Mon–Sat, 9am – 6:30pm IST</span></div>
+    </div>
+    <div class="cform">
+      <div class="row">
+        <input type="text" placeholder="Your Name" />
+        <input type="text" placeholder="Company" />
+      </div>
+      <input type="email" placeholder="Email Address" />
+      <select>
+        <option value="">Product Category</option>
+        <option>Inorganic Acids</option>
+        <option>Organic Acids</option>
+        <option>Alkalis & Bases</option>
+        <option>Solvents</option>
+        <option>Specialty Chemicals</option>
+        <option>Agrochemicals</option>
+      </select>
+      <textarea rows="3" placeholder="Message / Quantity required..."></textarea>
+      <button class="sbtn" onclick="sendMsg()">Send Inquiry</button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="ftr">
+    <div class="flogo">Auxinor Chem</div>
+    <div class="fcopy">© 2024 Auxinor Chem Pvt. Ltd. — Ahmedabad, India</div>
+  </div>
+
+  <!-- TALL SCROLL DRIVER -->
+  <div style="height:600vh;position:relative;z-index:-1"></div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
