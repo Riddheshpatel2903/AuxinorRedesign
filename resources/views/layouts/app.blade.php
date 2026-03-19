@@ -125,5 +125,69 @@
             </style>
         @endif
     @endif
+    
+    @php
+        $cmsSections = \App\Models\PageSection::forPage(request()->path() === '/' ? 'home' : request()->path())->get();
+    @endphp
+    @if($cmsSections->count() > 0)
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cmsData = @json($cmsSections);
+            cmsData.forEach(sec => {
+                const secEl = document.querySelector(`[data-section-id="${sec.id}"]`);
+                if (!secEl) return;
+                
+                // Visible?
+                if (sec.is_visible === 0) secEl.style.display = 'none';
+                
+                // Section Background?
+                if (sec.content && sec.content.bg_image_url) {
+                    secEl.style.backgroundImage = `url('${sec.content.bg_image_url}')`;
+                    secEl.style.backgroundSize = 'cover';
+                    secEl.style.backgroundPosition = 'center';
+                    if (sec.content.bg_overlay !== undefined) {
+                        let ov = secEl.querySelector('.ed-bg-overlay');
+                        if (!ov) {
+                            ov = document.createElement('div');
+                            ov.className = 'ed-bg-overlay';
+                            ov.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1';
+                            secEl.style.position = 'relative';
+                            secEl.prepend(ov);
+                        }
+                        ov.style.background = `rgba(13,17,23,${sec.content.bg_overlay})`;
+                    }
+                }
+                
+                // Section Styles
+                if (sec.styles) Object.assign(secEl.style, sec.styles);
+                
+                // Loop Content Nodes for elements
+                if (sec.content) {
+                    Object.keys(sec.content).forEach(key => {
+                        if (key.startsWith('el_href_')) {
+                            const elId = key.replace('el_href_', '');
+                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
+                            if (node) node.href = sec.content[key];
+                        } else if (key.startsWith('el_style_')) {
+                            const elId = key.replace('el_style_', '');
+                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
+                            if (node && typeof sec.content[key] === 'object') {
+                                Object.assign(node.style, sec.content[key]);
+                            }
+                        } else if (key.startsWith('el_')) {
+                            const elId = key.replace('el_', '');
+                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
+                            if (node && key !== 'el_href_'+elId && key !== 'el_style_'+elId) {
+                                // Important: We ONLY overwrite innerHTML if there's no nested content we're worried about destroying.
+                                // Actually yes, if it's a simple text element we just set it.
+                                node.innerHTML = sec.content[key];
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+    @endif
 </body>
 </html>

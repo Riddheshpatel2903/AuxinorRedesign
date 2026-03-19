@@ -1,6 +1,6 @@
 const state = {
   sectionId: null, elementId: null, sectionKey: null,
-  pending: {}, undoStack: [], dirty: false
+  pending: { styles: {}, content: {} }, undoStack: [], dirty: false
 }
 
 function post(action, payload) {
@@ -54,15 +54,25 @@ window.addEventListener('message', e => {
 })
 
 function applyProp(prop, value) {
-  if (!state.sectionId) return
+  if (!state.sectionId) return;
   state.undoStack.push({ sectionId: state.sectionId,
-                         elementId: state.elementId, prop, value })
+                         elementId: state.elementId, prop, value });
   post('apply-style', { sectionId: state.sectionId,
-                        elementId: state.elementId, prop, value })
-  const id = state.elementId || state.sectionId
-  if (!state.pending[id]) state.pending[id] = { styles: {} }
-  state.pending[id].styles[prop] = value
-  markDirty()
+                        elementId: state.elementId, prop, value });
+  
+  if (state.elementId) {
+    if (!state.pending.content) state.pending.content = {};
+    if (!state.pending.content[state.sectionId]) state.pending.content[state.sectionId] = {};
+    if (!state.pending.content[state.sectionId][`el_style_${state.elementId}`]) {
+      state.pending.content[state.sectionId][`el_style_${state.elementId}`] = {};
+    }
+    state.pending.content[state.sectionId][`el_style_${state.elementId}`][prop] = value;
+  } else {
+    if (!state.pending.styles) state.pending.styles = {};
+    if (!state.pending.styles[state.sectionId]) state.pending.styles[state.sectionId] = {};
+    state.pending.styles[state.sectionId][prop] = value;
+  }
+  markDirty();
 }
 
 document.querySelectorAll('.sctrl').forEach(el => {
@@ -186,16 +196,31 @@ document.getElementById('vis-hide').addEventListener('click', function() {
 })
 
 document.getElementById('saveBtn').addEventListener('click', async () => {
-  document.getElementById('saveBtn').textContent = 'Saving...'
-  const saves = Object.entries(state.pending).map(([id, d]) =>
-    d.styles && Object.keys(d.styles).length
-      ? api(ROUTES.style, { section_id: id, styles: d.styles })
-      : Promise.resolve()
-  )
-  await Promise.all(saves)
-  state.pending = {}
-  markClean()
-})
+  document.getElementById('saveBtn').textContent = 'Saving...';
+  
+  const saves = [];
+  // Save section styles
+  if (state.pending.styles) {
+    for (const [secId, styles] of Object.entries(state.pending.styles)) {
+      if (Object.keys(styles).length) {
+        saves.push(api(ROUTES.style, { section_id: secId, styles }));
+      }
+    }
+  }
+  
+  // Save element styles via content merge
+  if (state.pending.content) {
+    for (const [secId, content] of Object.entries(state.pending.content)) {
+      if (Object.keys(content).length) {
+        saves.push(api(ROUTES.content, { section_id: secId, content }));
+      }
+    }
+  }
+
+  await Promise.all(saves);
+  state.pending = { styles: {}, content: {} };
+  markClean();
+});
 
 document.getElementById('publishBtn').addEventListener('click', async () => {
   if (!confirm('Publish all changes live?')) return
