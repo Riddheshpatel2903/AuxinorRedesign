@@ -1,0 +1,29 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('page_elements', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('section_id')->constrained('page_sections')->cascadeOnDelete();
+            $table->string('element_key');
+            $table->enum('element_type', ['text', 'heading', 'button', 'image', 'stat']);
+            $table->text('content')->nullable();
+            $table->string('href')->nullable();
+            $table->string('image_url')->nullable();
+            $table->json('styles')->nullable();
+            $table->integer('sort_order')->default(0);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('page_elements');
+    }
+};

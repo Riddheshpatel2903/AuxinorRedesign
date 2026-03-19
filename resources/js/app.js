@@ -11,6 +11,6 @@ import './filter';
 import './magnetic';
 import './form';
 import './nav';
-import './ticker';
+import './scroll-animations';
 
 Alpine.start();

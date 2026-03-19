@@ -46,6 +46,24 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     Route::resource('posts', AdminPostController::class);
     
+    Route::resource('hero-slides', \App\Http\Controllers\Admin\HeroSlideController::class)
+         ->only(['index','store','update','destroy']);
+    Route::post('hero-slides/reorder', [\App\Http\Controllers\Admin\HeroSlideController::class,'reorder'])
+         ->name('hero-slides.reorder');
+    Route::post('hero-slides/upload', [\App\Http\Controllers\Admin\HeroSlideController::class,'upload'])
+         ->name('hero-slides.upload');
+    
     Route::get('settings', [AdminSettingController::class, 'index'])->name('settings');
     Route::post('settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
+    Route::prefix('editor')->name('editor.')->group(function() {
+        Route::get('/',          [\App\Http\Controllers\Admin\PageEditorController::class,'index'])           ->name('index');
+        Route::get('/{slug}',    [\App\Http\Controllers\Admin\PageEditorController::class,'page'])            ->name('page');
+        Route::post('/style',    [\App\Http\Controllers\Admin\PageEditorController::class,'updateStyle'])     ->name('style');
+        Route::post('/content',  [\App\Http\Controllers\Admin\PageEditorController::class,'updateContent'])   ->name('content');
+        Route::post('/visibility',[\App\Http\Controllers\Admin\PageEditorController::class,'toggleVisibility'])->name('visibility');
+        Route::post('/reorder',  [\App\Http\Controllers\Admin\PageEditorController::class,'reorder'])         ->name('reorder');
+        Route::post('/publish/{slug}', [\App\Http\Controllers\Admin\PageEditorController::class,'publish'])   ->name('publish');
+        Route::post('/upload-image', [\App\Http\Controllers\Admin\PageEditorController::class,'uploadImage']) ->name('upload-image');
+    });
 });

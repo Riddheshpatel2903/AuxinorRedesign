@@ -7,11 +7,13 @@ use App\Models\Setting;
 use App\Models\ProductCategory;
 use App\Models\Product;
 use App\Models\BlogPost;
+use App\Models\HeroSlide;
 
 class HomeController extends Controller
 {
     public function index()
     {
+        $heroSlides = HeroSlide::active()->get();
         $settings = Setting::pluck('value', 'key');
         $categories = ProductCategory::active()->ordered()->get();
         $featuredProducts = Product::with('category')->active()->featured()->ordered()->limit(8)->get();
@@ -34,6 +36,6 @@ class HomeController extends Controller
             'reach' => $settings['stat_reach'] ?? 'Pan-India',
         ];
 
-        return view('home', compact('settings', 'categories', 'featuredProducts', 'industries', 'recentPosts', 'stats'));
+        return view('home', compact('heroSlides', 'settings', 'categories', 'featuredProducts', 'industries', 'recentPosts', 'stats'));
     }
 }

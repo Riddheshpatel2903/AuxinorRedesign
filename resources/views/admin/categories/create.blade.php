@@ -5,7 +5,7 @@
 @section('subheader', 'Create a new product grouping.')
 
 @section('actions')
-<a href="{{ route('admin.categories.index') }}" class="text-white/50 hover:text-white transition-colors font-mono text-[11px] uppercase tracking-wider">
+<a href="{{ route('admin.categories.index') }}" class="text-gray-500 hover:text-ink transition-colors font-mono text-[11px] uppercase tracking-wider">
     ← Back to Categories
 </a>
 @endsection
@@ -16,28 +16,28 @@
         @csrf
         
         <div class="mb-6">
-            <label class="block font-mono text-[10px] uppercase tracking-wider text-white/50 mb-2">Category Name *</label>
+            <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Category Name *</label>
             <input type="text" name="name" value="{{ old('name') }}" required class="admin-input w-full p-3 font-display text-[15px]" placeholder="e.g. Aliphatic Solvents" x-data @input="$el.form.slug.value = $el.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')">
-            @error('name') <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+            @error('name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
         </div>
         
         <div class="mb-6">
-            <label class="block font-mono text-[10px] uppercase tracking-wider text-white/50 mb-2">Slug</label>
-            <input type="text" name="slug" value="{{ old('slug') }}" class="admin-input w-full p-3 font-mono text-[13px] text-white/70" placeholder="auto-generated-from-name">
-            <p class="text-white/30 text-xs mt-1 font-serif italic">URL friendly identifier. Leave blank to auto-generate.</p>
-            @error('slug') <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+            <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Slug</label>
+            <input type="text" name="slug" value="{{ old('slug') }}" class="admin-input w-full p-3 font-mono text-[13px] text-gray-600" placeholder="auto-generated-from-name">
+            <p class="text-gray-400 text-xs mt-1 font-serif italic">URL friendly identifier. Leave blank to auto-generate.</p>
+            @error('slug') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
         </div>
         
         <div class="mb-6">
-            <label class="block font-mono text-[10px] uppercase tracking-wider text-white/50 mb-2">Icon (Emoji or SVG)</label>
+            <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Icon (Emoji or SVG)</label>
             <input type="text" name="icon" value="{{ old('icon', '🧪') }}" class="admin-input w-24 p-3 font-display text-2xl text-center">
-            @error('icon') <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+            @error('icon') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
         </div>
         
         <div class="mb-8">
-            <label class="block font-mono text-[10px] uppercase tracking-wider text-white/50 mb-2">Description</label>
+            <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Description</label>
             <textarea name="description" rows="4" class="admin-input w-full p-3 font-serif text-[14px] resize-y">{{ old('description') }}</textarea>
-            @error('description') <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+            @error('description') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
         </div>
         
         <div class="flex items-center">

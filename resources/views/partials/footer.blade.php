@@ -1,4 +1,4 @@
-<footer class="bg-ink text-white pt-20 pb-6 border-t-[4px] border-teal">
+<footer data-section-id="9999" data-section-key="footer" data-section-label="Global Footer" class="bg-ink text-white pt-20 pb-6 border-t-[4px] border-teal">
     <div class="max-w-[1400px] mx-auto px-4 md:px-8">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             <!-- Brand -->
@@ -13,12 +13,12 @@
                         <span class="font-mono text-[10px] text-muted">Chemicals LLP</span>
                     </div>
                 </a>
-                <p class="font-serif italic text-[13px] text-white/60 mb-6 leading-relaxed">
+                <p data-element-id="setting:footer_tagline" class="font-serif italic text-[13px] text-white/60 mb-6 leading-relaxed">
                     {{ $globalSettings['footer_tagline'] ?? "Chemical trading, distribution, and market intelligence — serving India's industrial sector with trust, accountability, and quality." }}
                 </p>
                 <div class="flex space-x-4">
-                    <a href="{{ $globalSettings['facebook_url'] ?? '#' }}" class="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-white/60 hover:text-teal hover:border-teal transition-colors">FB</a>
-                    <a href="{{ $globalSettings['linkedin_url'] ?? '#' }}" class="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-white/60 hover:text-teal hover:border-teal transition-colors">IN</a>
+                    <a data-element-id="setting:social_facebook" href="{{ $globalSettings['social_facebook'] ?? '#' }}" class="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-white/60 hover:text-teal hover:border-teal transition-colors">FB</a>
+                    <a data-element-id="setting:social_linkedin" href="{{ $globalSettings['social_linkedin'] ?? '#' }}" class="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-white/60 hover:text-teal hover:border-teal transition-colors">IN</a>
                 </div>
             </div>
 
