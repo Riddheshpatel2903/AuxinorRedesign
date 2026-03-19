@@ -51,13 +51,44 @@ document.querySelectorAll('[data-section-id]').forEach(sec => {
   })
 })
 
+// Auto-tag all meaningful child elements
+document.querySelectorAll('[data-section-id]').forEach(sec => {
+  const sid = sec.dataset.sectionId;
+  const tags = ['h1','h2','h3','h4','h5','p','span','a','button','img','div','li','label'];
+  let counter = 0;
+  
+  // Recursively tag elements, avoiding editor UI elements
+  const tagNode = (node) => {
+    if (node.nodeType !== 1) return;
+    if (node.classList.contains('ed-bg-overlay')) return;
+    
+    // Only tag meaningful visual elements
+    if (tags.includes(node.tagName.toLowerCase())) {
+      if (!node.hasAttribute('data-element-id')) {
+        node.dataset.elementId = `auto_${sid}_${node.tagName.toLowerCase()}_${counter++}`;
+        node.dataset.elementType = node.tagName.toLowerCase();
+        node.dataset.elementKey = `${node.tagName.toLowerCase()} ${counter}`;
+      }
+    }
+    
+    Array.from(node.children).forEach(tagNode);
+  };
+  
+  Array.from(sec.children).forEach(tagNode);
+});
+
 // Make elements selectable
 document.querySelectorAll('[data-element-id]').forEach(el => {
-  el.style.cursor = 'text'
-  el.addEventListener('mouseenter', () =>
-    el.style.outlineColor = 'rgba(18,160,142,0.5)')
-  el.addEventListener('mouseleave', () =>
-    el.style.outlineColor = 'transparent')
+  el.style.cursor = 'pointer' // changed to pointer to imply clickability
+  el.addEventListener('mouseenter', (e) => {
+    e.stopPropagation();
+    el.style.outline = '1px dashed rgba(18,160,142,0.8)';
+    el.style.outlineOffset = '2px';
+  })
+  el.addEventListener('mouseleave', (e) => {
+    e.stopPropagation();
+    el.style.outline = 'transparent';
+  })
   el.addEventListener('click', e => {
     e.stopPropagation()
     e.preventDefault()
