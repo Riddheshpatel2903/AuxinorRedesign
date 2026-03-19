@@ -4,7 +4,7 @@
 
 @section('content')
 <!-- Hero Banner -->
-<section class="bg-gradient-to-r from-ink to-ink2 text-white py-24 px-4 md:px-8 border-b-4 border-teal">
+<section data-section-id="8" data-section-key="about_hero" data-section-label="About Hero" class="bg-gradient-to-r from-ink to-ink2 text-white py-24 px-4 md:px-8 border-b-4 border-teal @auth cms-editable @endauth" data-cms-label="Edit About Hero">
     <div class="max-w-[1400px] mx-auto text-center">
         <div class="font-mono text-[10px] uppercase tracking-widest text-teal-2 mb-4">About Auxinor Chemicals</div>
         <h1 class="font-display font-extrabold text-[40px] md:text-[56px] leading-tight mb-4">Trading With <em class="font-serif italic font-normal text-teal-2">Integrity</em></h1>
@@ -17,18 +17,18 @@
 </section>
 
 <!-- Our Story / Mission -->
-<section class="py-20 px-4 md:px-8 max-w-[1000px] mx-auto text-center sr-up">
+<section data-section-id="9" data-section-key="about_mission" data-section-label="Mission & Story" class="py-20 px-4 md:px-8 max-w-[1000px] mx-auto text-center sr-up @auth cms-editable @endauth" data-cms-label="Edit Mission & Story">
     <div class="w-12 h-12 bg-teal flex items-center justify-center text-white text-xl mx-auto mb-8 font-serif italic">"</div>
-    <h2 class="font-display font-bold text-[28px] md:text-[36px] leading-snug mb-8">
+    <h2 data-element-id="el_setting:mission" class="font-display font-bold text-[28px] md:text-[36px] leading-snug mb-8">
         {{ $globalSettings['mission'] ?? 'Our mission is to catalyze global commerce by embodying values and fostering long-term relationships.' }}
     </h2>
-    <p class="font-serif text-[16px] text-muted leading-relaxed max-w-2xl mx-auto">
+    <p data-element-id="el_setting:about_long" class="font-serif text-[16px] text-muted leading-relaxed max-w-2xl mx-auto">
         {{ $globalSettings['about_long'] ?? "Grounded in entrepreneurial spirit, we ensure sustained growth through honest, accountable chemical trading. We specialize in bulk procurement and supply chain optimization." }}
     </p>
 </section>
 
 <!-- Values Cards -->
-<section class="bg-bg py-24 px-4 md:px-8 border-y border-line">
+<section data-section-id="10" data-section-key="about_values" data-section-label="Core Values" class="bg-bg py-24 px-4 md:px-8 border-y border-line @auth cms-editable @endauth" data-cms-label="Edit Core Values">
     <div class="max-w-[1400px] mx-auto">
         <div class="text-center mb-16">
             <span class="font-mono text-[10px] uppercase tracking-widest text-teal block mb-4">Core Principles</span>
@@ -53,7 +53,7 @@
 </section>
 
 <!-- Why Choose Us -->
-<section class="py-24 px-4 md:px-8 max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<section data-section-id="11" data-section-key="about_advantage" data-section-label="The Advantage" class="py-24 px-4 md:px-8 max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center @auth cms-editable @endauth" data-cms-label="Edit Advantage">
     <div class="relative sr-l group">
         <div class="absolute -inset-4 bg-teal-light transform rotate-3 transition-transform group-hover:rotate-0"></div>
         <div class="relative z-10 overflow-hidden shadow-lg">
@@ -92,7 +92,7 @@
 </section>
 
 <!-- Trust Stats -->
-<section class="bg-ink py-16 px-4 md:px-8 border-t border-line text-white">
+<section data-section-id="12" data-section-key="about_stats" data-section-label="Trust Stats" class="bg-ink py-16 px-4 md:px-8 border-t border-line text-white @auth cms-editable @endauth" data-cms-label="Edit Trust Stats">
     <div class="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-white/10">
         <div>
             <div class="font-display font-bold text-4xl text-teal-2 mb-2" data-count="{{ $globalSettings['stat_years'] ?? '7' }}">0</div>

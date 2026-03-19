@@ -14,7 +14,7 @@
 @section('content')
 <div class="admin-card overflow-hidden" x-data="adminProductSearch()" x-init="attachPaginationListeners()">
     <!-- Filter Bar -->
-    <div class="p-4 border-b border-white/5 bg-white/5 flex gap-4">
+    <div class="p-4 border-b border-gray-100 bg-gray-50 flex gap-4">
         <form @submit.prevent="fetchData(null)" class="flex flex-1 gap-4 items-center">
             <input type="text" x-model="search" placeholder="Search name or CAS..." class="admin-input px-3 py-2 w-64 text-sm font-serif" @input.debounce.500ms="fetchData(null)">
             
@@ -25,7 +25,7 @@
                 @endforeach
             </select>
             
-            <button type="button" @click="search=''; category=''; fetchData(null)" x-show="search || category" class="text-teal mx-2 text-[10px] font-mono uppercase tracking-wider hover:text-white transition-colors">Clear</button>
+            <button type="button" @click="search=''; category=''; fetchData(null)" x-show="search || category" class="text-teal mx-2 text-[10px] font-mono uppercase tracking-wider hover:text-ink transition-colors">Clear</button>
             <span x-show="loading" class="text-teal text-[10px] font-mono uppercase tracking-widest ml-auto blink">Refreshing...</span>
         </form>
     </div>

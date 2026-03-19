@@ -2,29 +2,32 @@
 
 @section('content')
 <!-- HERO SECTION -->
-<section class="min-h-[88vh] border-b border-line relative overflow-hidden @auth cms-editable @endauth" data-cms-label="Edit Hero Layout & Images"
+<section data-section-id="1" data-section-key="hero" data-section-label="Hero Section" class="min-h-[88vh] border-b border-line relative overflow-hidden @auth cms-editable @endauth" data-cms-label="Edit Hero Layout & Images"
          x-data="{ 
             images: [
-                '{{ $globalSettings['hero_image_url'] ?? asset('assets/images/hero-1.jpg') }}',
-                '{{ asset('assets/images/hero-2.jpg') }}',
-                '{{ asset('assets/images/hero-3.jpg') }}',
-                '{{ asset('assets/images/hero-4.jpg') }}'
+                @if(!empty($globalSettings['hero_bg_1'])) { url: '{{ $globalSettings['hero_bg_1'] }}', overlay: {{ $globalSettings['hero_bg_overlay_1'] ?? '0.5' }} }, @endif
+                @if(!empty($globalSettings['hero_bg_2'])) { url: '{{ $globalSettings['hero_bg_2'] }}', overlay: {{ $globalSettings['hero_bg_overlay_2'] ?? '0.5' }} }, @endif
+                @if(!empty($globalSettings['hero_bg_3'])) { url: '{{ $globalSettings['hero_bg_3'] }}', overlay: {{ $globalSettings['hero_bg_overlay_3'] ?? '0.5' }} }, @endif
+                @if(!empty($globalSettings['hero_bg_4'])) { url: '{{ $globalSettings['hero_bg_4'] }}', overlay: {{ $globalSettings['hero_bg_overlay_4'] ?? '0.5' }} }, @endif
+                @if(empty($globalSettings['hero_bg_1']) && empty($globalSettings['hero_bg_2']) && empty($globalSettings['hero_bg_3']) && empty($globalSettings['hero_bg_4']))
+                { url: '{{ asset('assets/images/hero-1.jpg') }}', overlay: 0.5 }
+                @endif
             ],
             activeIndex: 0 
-         }" 
-         x-init="setInterval(() => { activeIndex = (activeIndex + 1) % images.length }, 4000)">
+         }"
+         x-init="autoTimer = setInterval(() => { activeIndex = (activeIndex + 1) % images.length }, 4000)">
          
     <!-- Dynamic Background Images -->
     @if(($globalSettings['show_hero_image'] ?? '1') == '1')
-    <template x-for="(img, index) in images" :key="index">
-        <img :src="img" alt="Chemical Infrastructure" 
-             class="absolute inset-0 w-full h-full object-cover transition-opacity duration-[2s] ease-in-out"
-             :class="activeIndex === index ? 'opacity-100' : 'opacity-0'" />
+    <template x-for="(slide, index) in images" :key="index">
+      <div class="absolute inset-0 transition-opacity duration-[2s] ease-in-out"
+           :class="activeIndex === index ? 'opacity-100' : 'opacity-0'">
+        <img :src="slide.url" alt="Chemical Infrastructure"
+             class="w-full h-full object-cover" />
+        <div class="absolute inset-0" :style="'background: rgba(0,0,0,' + slide.overlay + ')'"></div>
+      </div>
     </template>
     @endif
-    
-    <!-- Overall Blackish Overlay for text readability -->
-    <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90"></div>
 
     <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 h-full min-h-[88vh]">
     <!-- Left Column -->
@@ -35,12 +38,12 @@
         </div>
         
         <h1 class="font-display font-extrabold text-[50px] lg:text-[72px] leading-[1.05] tracking-tight mb-8">
-            <div class="clip overflow-hidden"><span class="block text-white transform translate-y-full transition-transform duration-[1.2s] ease-out" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)" :class="loaded ? '!translate-y-0' : ''">{{ $globalSettings['hero_headline_line1'] ?? 'Trusted' }}</span></div>
-            <div class="clip overflow-hidden"><span class="block text-white transform translate-y-full transition-transform duration-[1.2s] ease-out delay-[200ms]" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)" :class="loaded ? '!translate-y-0' : ''">{{ $globalSettings['hero_headline_line2'] ?? 'Chemical' }}</span></div>
-            <div class="clip overflow-hidden"><span class="block text-teal-light font-display italic font-medium transform translate-y-full transition-transform duration-[1.2s] ease-out delay-[400ms]" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)" :class="loaded ? '!translate-y-0' : ''">{{ $globalSettings['hero_headline_line3'] ?? 'Partners' }}</span></div>
+            <div class="clip overflow-hidden"><span data-element-id="el_setting:hero_headline_line1" class="block text-white transform translate-y-full transition-transform duration-[1.2s] ease-out" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)" :class="loaded ? '!translate-y-0' : ''">{{ $globalSettings['hero_headline_line1'] ?? 'Trusted' }}</span></div>
+            <div class="clip overflow-hidden"><span data-element-id="el_setting:hero_headline_line2" class="block text-white transform translate-y-full transition-transform duration-[1.2s] ease-out delay-[200ms]" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)" :class="loaded ? '!translate-y-0' : ''">{{ $globalSettings['hero_headline_line2'] ?? 'Chemical' }}</span></div>
+            <div class="clip overflow-hidden"><span data-element-id="el_setting:hero_headline_line3" class="block text-teal-light font-display italic font-medium transform translate-y-full transition-transform duration-[1.2s] ease-out delay-[400ms]" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)" :class="loaded ? '!translate-y-0' : ''">{{ $globalSettings['hero_headline_line3'] ?? 'Partners' }}</span></div>
         </h1>
         
-        <p class="font-sans text-[17px] text-white/80 max-w-lg mb-12 sr data-delay-850 leading-relaxed font-light">
+        <p data-element-id="el_setting:hero_subtext" class="font-sans text-[17px] text-white/80 max-w-lg mb-12 sr data-delay-850 leading-relaxed font-light">
             {{ $globalSettings['hero_subtext'] ?? "Specialists in procurement, bulk distribution, and surplus chemical trading — serving India's top industrial sectors since 2017." }}
         </p>
         
@@ -87,16 +90,24 @@
         </div>
     </div>
     </div>
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+      <template x-for="(slide, index) in images" :key="'dot-'+index">
+        <button @click="activeIndex = index; clearInterval(autoTimer); autoTimer = setInterval(() => activeIndex = (activeIndex+1) % images.length, 4000)"
+                class="h-1.5 rounded-full transition-all duration-300"
+                :class="activeIndex === index ? 'w-6 bg-teal-2' : 'w-1.5 bg-white/40'">
+        </button>
+      </template>
+    </div>
 </section>
 
 <!-- SERVICES STRIP -->
-<section class="bg-ink grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 p-4 lg:p-8 gap-4 sr-up relative z-10">
+<section data-section-id="2" data-section-key="services_strip" data-section-label="Services Strip" class="bg-ink grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 p-4 lg:p-8 gap-4 sr-up relative z-10">
     <!-- Card 1: Trading -->
-    <a href="#" class="relative h-[350px] lg:h-[450px] bg-ink2 overflow-hidden group rounded-sm block">
+    <a href="#" class="relative h-[350px] lg:h-[450px] bg-ink2 overflow-hidden group rounded-sm block hover:-translate-y-2 transition-transform duration-500">
         <img src="{{ asset('assets/images/service-trading.jpg') }}" class="absolute inset-0 w-full h-full object-cover filter brightness-75 group-hover:scale-105 group-hover:brightness-100 transition-all duration-700" alt="Chemical Trading Data">
         <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90"></div>
         <div class="absolute inset-0 p-8 flex flex-col justify-between">
-            <h3 class="font-display font-medium text-3xl text-white leading-tight max-w-[200px]">Chemical<br>Trading</h3>
+            <h3 class="font-display font-medium text-3xl text-white leading-tight max-w-[200px] group-hover:text-4xl group-hover:tracking-tight transition-all duration-500">Chemical<br>Trading</h3>
             <div class="inline-flex items-center justify-center space-x-2 border border-white/40 rounded-full px-5 py-2.5 w-max backdrop-blur-md hover:bg-white hover:text-ink transition-all">
                 <span class="font-sans text-[11px] font-semibold uppercase tracking-wider text-white group-hover:text-ink transition-colors">Learn More</span>
                 <svg class="w-4 h-4 text-white group-hover:text-ink transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -104,11 +115,11 @@
         </div>
     </a>
     <!-- Card 2: Distribution -->
-    <a href="#" class="relative h-[350px] lg:h-[450px] bg-ink2 overflow-hidden group rounded-sm block">
+    <a href="#" class="relative h-[350px] lg:h-[450px] bg-ink2 overflow-hidden group rounded-sm block hover:-translate-y-2 transition-transform duration-500">
         <img src="{{ asset('assets/images/service-logistics.jpg') }}" class="absolute inset-0 w-full h-full object-cover filter brightness-75 group-hover:scale-105 group-hover:brightness-100 transition-all duration-700" alt="Distribution Logistics">
         <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90"></div>
         <div class="absolute inset-0 p-8 flex flex-col justify-between">
-            <h3 class="font-display font-medium text-3xl text-white leading-tight max-w-[200px]">Distribution<br>& Logistics</h3>
+            <h3 class="font-display font-medium text-3xl text-white leading-tight max-w-[200px] group-hover:text-4xl group-hover:tracking-tight transition-all duration-500">Distribution<br>& Logistics</h3>
             <div class="inline-flex items-center justify-center space-x-2 border border-white/40 rounded-full px-5 py-2.5 w-max backdrop-blur-md hover:bg-white hover:text-ink transition-all">
                 <span class="font-sans text-[11px] font-semibold uppercase tracking-wider text-white group-hover:text-ink transition-colors">Learn More</span>
                 <svg class="w-4 h-4 text-white group-hover:text-ink transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -116,11 +127,11 @@
         </div>
     </a>
     <!-- Card 3: Warehousing -->
-    <a href="#" class="relative h-[350px] lg:h-[450px] bg-ink2 overflow-hidden group rounded-sm block">
+    <a href="#" class="relative h-[350px] lg:h-[450px] bg-ink2 overflow-hidden group rounded-sm block hover:-translate-y-2 transition-transform duration-500">
         <img src="{{ asset('assets/images/service-warehousing.jpg') }}" class="absolute inset-0 w-full h-full object-cover filter brightness-75 group-hover:scale-105 group-hover:brightness-100 transition-all duration-700" alt="Bulk Warehousing">
         <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90"></div>
         <div class="absolute inset-0 p-8 flex flex-col justify-between">
-            <h3 class="font-display font-medium text-3xl text-white leading-tight max-w-[200px]">Bulk<br>Warehousing</h3>
+            <h3 class="font-display font-medium text-3xl text-white leading-tight max-w-[200px] group-hover:text-4xl group-hover:tracking-tight transition-all duration-500">Bulk<br>Warehousing</h3>
             <div class="inline-flex items-center justify-center space-x-2 border border-white/40 rounded-full px-5 py-2.5 w-max backdrop-blur-md hover:bg-white hover:text-ink transition-all">
                 <span class="font-sans text-[11px] font-semibold uppercase tracking-wider text-white group-hover:text-ink transition-colors">Learn More</span>
                 <svg class="w-4 h-4 text-white group-hover:text-ink transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -128,11 +139,11 @@
         </div>
     </a>
     <!-- Card 4: Insights -->
-    <a href="#" class="relative h-[350px] lg:h-[450px] bg-ink2 overflow-hidden group rounded-sm block">
+    <a href="#" class="relative h-[350px] lg:h-[450px] bg-ink2 overflow-hidden group rounded-sm block hover:-translate-y-2 transition-transform duration-500">
         <img src="{{ asset('assets/images/service-insights.jpg') }}" class="absolute inset-0 w-full h-full object-cover filter brightness-75 group-hover:scale-105 group-hover:brightness-100 transition-all duration-700" alt="Market Insights Trading">
         <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90"></div>
         <div class="absolute inset-0 p-8 flex flex-col justify-between">
-            <h3 class="font-display font-medium text-3xl text-white leading-tight max-w-[200px]">Market<br>Insights</h3>
+            <h3 class="font-display font-medium text-3xl text-white leading-tight max-w-[200px] group-hover:text-4xl group-hover:tracking-tight transition-all duration-500">Market<br>Insights</h3>
             <div class="inline-flex items-center justify-center space-x-2 border border-white/40 rounded-full px-5 py-2.5 w-max backdrop-blur-md hover:bg-white hover:text-ink transition-all">
                 <span class="font-sans text-[11px] font-semibold uppercase tracking-wider text-white group-hover:text-ink transition-colors">Learn More</span>
                 <svg class="w-4 h-4 text-white group-hover:text-ink transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -142,7 +153,7 @@
 </section>
 
 <!-- INDUSTRIES SECTION -->
-<section class="bg-white py-[100px] px-4 md:px-8 max-w-[1400px] mx-auto">
+<section data-section-id="3" data-section-key="industries" data-section-label="Industries" class="bg-white py-[100px] px-4 md:px-8 max-w-[1400px] mx-auto">
     <div class="mb-16">
         <span class="font-mono text-[10px] uppercase tracking-widest text-teal block mb-4">Industries Served</span>
         <h2 class="font-display font-extrabold text-[48px] leading-tight">Where We <em class="font-serif italic text-teal font-normal">Deliver</em></h2>
@@ -187,7 +198,7 @@
 </section>
 
 <!-- PRODUCTS SECTION -->
-<section class="bg-bg py-[100px] px-4 md:px-8 border-y border-line">
+<section data-section-id="4" data-section-key="products" data-section-label="Products" class="bg-bg py-[100px] px-4 md:px-8 border-y border-line">
     <div class="max-w-[1400px] mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-end mb-16">
             <div>
@@ -240,7 +251,7 @@
 </section>
 
 <!-- ABOUT / INFRASTRUCTURE SECTION -->
-<section class="bg-ink py-[110px] px-4 md:px-8 border-b-4 border-teal overflow-hidden relative @auth cms-editable @endauth" data-cms-label="Edit About & Infrastructure Content">
+<section data-section-id="5" data-section-key="about_infra" data-section-label="About & Infrastructure" class="bg-ink py-[110px] px-4 md:px-8 border-b-4 border-teal overflow-hidden relative @auth cms-editable @endauth" data-cms-label="Edit About & Infrastructure Content">
     @if(($globalSettings['show_about_image'] ?? '1') == '1' && !empty($globalSettings['about_image_url']))
         <img src="{{ $globalSettings['about_image_url'] }}" class="absolute left-0 top-0 w-1/2 h-full object-cover opacity-[0.08] filter grayscale pointer-events-none" style="mask-image: linear-gradient(to right, black, transparent);">
     @endif
@@ -255,10 +266,10 @@
             <h2 class="font-display font-extrabold text-[40px] md:text-[48px] text-white leading-tight mb-8 sr-l data-delay-100">Seven Years of <em class="font-serif italic text-teal-2 font-normal">Chemical</em> Excellence</h2>
             
             <div class="space-y-6 mb-12 sr-l data-delay-200">
-                <p class="font-serif italic text-[14px] text-[#5a7080] leading-relaxed">
+                <p data-element-id="el_setting:about_short" class="font-serif italic text-[14px] text-[#5a7080] leading-relaxed">
                     {{ $globalSettings['about_short'] ?? 'Auxinor Chemicals LLP is a B2B chemical trading company based in Ahmedabad, Gujarat. We specialize in the procurement, trading, and distribution of industrial chemicals.' }}
                 </p>
-                <p class="font-serif italic text-[14px] text-[#5a7080] leading-relaxed">
+                <p data-element-id="el_setting:about_long" class="font-serif italic text-[14px] text-[#5a7080] leading-relaxed">
                     {{ $globalSettings['about_long'] ?? 'Our strength lies in maintaining a strong vendor and sourcing network, providing competitive pricing, and ensuring reliable supply chains.' }}
                 </p>
             </div>
@@ -282,32 +293,32 @@
         
         <!-- Right: Infra Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="bg-[#111b25] border border-[#1a2535] p-8 hover:border-teal transition-colors sr-r" data-delay="0">
-                <div class="w-12 h-12 bg-ink border border-[#1e2d3d] flex items-center justify-center text-xl mb-6 text-teal-2">🏭</div>
-                <h3 class="font-display font-bold text-white text-[15px] mb-3">Warehousing Facilities</h3>
-                <p class="font-serif italic text-[12px] text-[#5a7080]">Safe storage for bulk organics and inorganics.</p>
+            <div class="bg-[#111b25] border border-[#1a2535] p-8 hover:border-teal hover:bg-[#0d1e1a] transition-colors sr-r group" data-delay="0">
+                <div class="w-12 h-12 bg-ink border border-[#1e2d3d] flex items-center justify-center text-2xl mb-6 text-teal-2 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-5deg]">&#x1F3ED;</div>
+                <h3 class="font-display font-bold text-white text-[16px] mb-3 tracking-wide">Warehousing Facilities</h3>
+                <p class="font-serif italic text-[13px] text-[#6a8090] leading-relaxed">Safe storage for bulk organics and inorganics.</p>
             </div>
-            <div class="bg-[#111b25] border border-[#1a2535] p-8 hover:border-teal transition-colors sr-r" data-delay="130">
-                <div class="w-12 h-12 bg-ink border border-[#1e2d3d] flex items-center justify-center text-xl mb-6 text-teal-2">🚛</div>
-                <h3 class="font-display font-bold text-white text-[15px] mb-3">Pan-India Logistics</h3>
-                <p class="font-serif italic text-[12px] text-[#5a7080]">Timely dispatch and seamless supply chain.</p>
+            <div class="bg-[#111b25] border border-[#1a2535] p-8 hover:border-teal hover:bg-[#0d1e1a] transition-colors sr-r group" data-delay="130">
+                <div class="w-12 h-12 bg-ink border border-[#1e2d3d] flex items-center justify-center text-2xl mb-6 text-teal-2 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-5deg]">&#x1F69B;</div>
+                <h3 class="font-display font-bold text-white text-[16px] mb-3 tracking-wide">Pan-India Logistics</h3>
+                <p class="font-serif italic text-[13px] text-[#6a8090] leading-relaxed">Timely dispatch and seamless supply chain.</p>
             </div>
-            <div class="bg-[#111b25] border border-[#1a2535] p-8 hover:border-teal transition-colors sr-r" data-delay="260">
-                <div class="w-12 h-12 bg-ink border border-[#1e2d3d] flex items-center justify-center text-xl mb-6 text-teal-2">🔗</div>
-                <h3 class="font-display font-bold text-white text-[15px] mb-3">Vendor Network</h3>
-                <p class="font-serif italic text-[12px] text-[#5a7080]">Strong alliances with global manufacturers.</p>
+            <div class="bg-[#111b25] border border-[#1a2535] p-8 hover:border-teal hover:bg-[#0d1e1a] transition-colors sr-r group" data-delay="260">
+                <div class="w-12 h-12 bg-ink border border-[#1e2d3d] flex items-center justify-center text-2xl mb-6 text-teal-2 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-5deg]">&#x1F517;</div>
+                <h3 class="font-display font-bold text-white text-[16px] mb-3 tracking-wide">Vendor Network</h3>
+                <p class="font-serif italic text-[13px] text-[#6a8090] leading-relaxed">Strong alliances with global manufacturers.</p>
             </div>
-            <div class="bg-[#111b25] border border-[#1a2535] p-8 hover:border-teal transition-colors sr-r" data-delay="390">
-                <div class="w-12 h-12 bg-ink border border-[#1e2d3d] flex items-center justify-center text-xl mb-6 text-teal-2">📦</div>
-                <h3 class="font-display font-bold text-white text-[15px] mb-3">Inventory Mgmt</h3>
-                <p class="font-serif italic text-[12px] text-[#5a7080]">Always-in-stock policy for key industrial solvents.</p>
+            <div class="bg-[#111b25] border border-[#1a2535] p-8 hover:border-teal hover:bg-[#0d1e1a] transition-colors sr-r group" data-delay="390">
+                <div class="w-12 h-12 bg-ink border border-[#1e2d3d] flex items-center justify-center text-2xl mb-6 text-teal-2 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-5deg]">&#x1F4E6;</div>
+                <h3 class="font-display font-bold text-white text-[16px] mb-3 tracking-wide">Inventory Mgmt</h3>
+                <p class="font-serif italic text-[13px] text-[#6a8090] leading-relaxed">Always-in-stock policy for key industrial solvents.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- MARKET INSIGHTS -->
-<section class="bg-white py-[100px] px-4 md:px-8">
+<section data-section-id="6" data-section-key="insights" data-section-label="Market Insights" class="bg-white py-[100px] px-4 md:px-8">
     <div class="max-w-[1400px] mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-end mb-16">
             <div>
@@ -337,7 +348,7 @@
 </section>
 
 <!-- CONTACT SECTION -->
-<section class="bg-bg py-[100px] px-4 md:px-8 border-t border-line @auth cms-editable @endauth" data-cms-label="Edit Contact Details">
+<section data-section-id="7" data-section-key="contact" data-section-label="Contact & Enquiry" class="bg-bg py-[100px] px-4 md:px-8 border-t border-line @auth cms-editable @endauth" data-cms-label="Edit Contact Details">
     <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
         <div class="relative bg-ink rounded-sm overflow-hidden p-8 lg:p-12 text-white">
             <img src="{{ asset('assets/images/contact-bg.jpg') }}" alt="Contact Us" class="absolute inset-0 w-full h-full object-cover opacity-[0.15] filter grayscale blur-sm">
@@ -352,24 +363,24 @@
                 
                 <ul class="space-y-8 sr-l data-delay-300 block">
                     <li class="flex items-start space-x-5">
-                        <div class="w-12 h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#a8d5cf]">📍</div>
+                        <div class="w-12 h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#a8d5cf]">&#x1F4CD;</div>
                         <div class="flex-1">
                             <span class="block font-sans font-semibold text-xs uppercase tracking-wider mb-2 text-white/50">Corporate Office</span>
-                            <p class="font-sans text-[14px] text-white leading-relaxed">{{ $globalSettings['office_address'] ?? 'Ahmedabad, Gujarat' }}</p>
+                            <p data-element-id="el_setting:office_address" class="font-sans text-[14px] text-white leading-relaxed">{{ $globalSettings['office_address'] ?? 'Ahmedabad, Gujarat' }}</p>
                         </div>
                     </li>
                     <li class="flex items-start space-x-5">
-                        <div class="w-12 h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#a8d5cf]">📞</div>
+                        <div class="w-12 h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#a8d5cf]">&#x1F4DE;</div>
                         <div class="flex-1">
                             <span class="block font-sans font-semibold text-xs uppercase tracking-wider mb-2 text-white/50">Primary Line</span>
-                            <a href="tel:{{ $globalSettings['phone_primary'] }}" class="font-sans text-[14px] text-white hover:text-[#a8d5cf] transition-colors">{{ $globalSettings['phone_primary'] ?? '+91' }}</a>
+                            <a data-element-id="el_setting:phone_primary" href="tel:{{ $globalSettings['phone_primary'] }}" class="font-sans text-[14px] text-white hover:text-[#a8d5cf] transition-colors">{{ $globalSettings['phone_primary'] ?? '+91' }}</a>
                         </div>
                     </li>
                     <li class="flex items-start space-x-5">
-                        <div class="w-12 h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#a8d5cf]">✉️</div>
+                        <div class="w-12 h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-md flex items-center justify-center text-[#a8d5cf]">&#x2709;&#xFE0F;</div>
                         <div class="flex-1">
                             <span class="block font-sans font-semibold text-xs uppercase tracking-wider mb-2 text-white/50">Sales Email</span>
-                            <a href="mailto:{{ $globalSettings['email_sales'] }}" class="font-sans text-[14px] text-white hover:text-[#a8d5cf] transition-colors">{{ $globalSettings['email_sales'] ?? 'sales@auxinorchem.com' }}</a>
+                            <a data-element-id="el_setting:email_sales" href="mailto:{{ $globalSettings['email_sales'] }}" class="font-sans text-[14px] text-white hover:text-[#a8d5cf] transition-colors">{{ $globalSettings['email_sales'] ?? 'sales@auxinorchem.com' }}</a>
                         </div>
                     </li>
                 </ul>
