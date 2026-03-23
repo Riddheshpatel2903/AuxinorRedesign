@@ -35,6 +35,8 @@ class SettingController extends Controller
             }
         }
 
+        cache()->forget('global_settings');
+
         return back()->with('success', 'Settings updated successfully.');
     }
 }

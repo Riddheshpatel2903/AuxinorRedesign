@@ -18,15 +18,19 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make('Admin@2024'),
                 'remember_token' => Str::random(10),
+                'is_admin' => true,
             ]
         );
 
         $this->call([
+            SettingsSeeder::class,
+            HeroSlideSeeder::class,
             ProductCategorySeeder::class,
             ProductSeeder::class,
-            SettingsSeeder::class,
             BlogPostSeeder::class,
-            HeroSlideSeeder::class,
+            PageSeeder::class,
+            PageSectionSeeder::class,
+            PageElementSeeder::class,
         ]);
     }
 }

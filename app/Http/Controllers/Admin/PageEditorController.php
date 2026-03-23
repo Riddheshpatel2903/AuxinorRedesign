@@ -3,83 +3,154 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\PageSection;
+use App\Models\Page;
+use App\CMS\SectionSchema;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
+/**
+ * PageEditorController (REFACTORED - PHASE 5)
+ * 
+ * Now only handles the visual editor UI (layout, rendering, etc.)
+ * 
+ * All business logic delegated to:
+ * - AdminPageController (page CRUD)
+ * - SectionController (section management)
+ * - SectionContentController (content editing)
+ * - SectionStyleController (styling)
+ * 
+ * REMOVED:
+ * ❌ Industry editing
+ * ❌ Product editing
+ * ❌ Category editing
+ * ❌ Settings editing
+ * ❌ Mixed element parsing
+ * 
+ * These are now in their dedicated controllers.
+ */
 class PageEditorController extends Controller
 {
+    /**
+     * Show list of editable pages
+     */
     public function index()
     {
-        return view('admin.editor.index');
+        $pages = Page::latest('updated_at')->get()
+            ->map(fn($page) => [
+                'slug' => $page->slug,
+                'title' => $page->title ?: ucfirst(str_replace('-', ' ', $page->slug)),
+                'url' => $page->url,
+                'sections_count' => $page->countSections(),
+                'is_published' => $page->isPublished(),
+            ]);
+
+        return view('admin.editor.index', [
+            'pages' => $pages,
+        ]);
     }
 
-    public function page($slug)
+    /**
+     * Show editor for a page
+     */
+    public function page(string $slug)
     {
-        $pageSlug = $slug;
-        $sections = PageSection::forPage($pageSlug)->get();
-        $globalSettings = \App\Models\Setting::pluck('value', 'key')->toArray();
-        return view('admin.editor.editor', compact('sections', 'pageSlug', 'globalSettings'));
+        $page = Page::where('slug', $slug)->firstOrFail();
+
+        // Load global settings
+        $globalSettings = cache()->remember('global_settings', 600, function () {
+            return \App\Models\Setting::pluck('value', 'key')->toArray();
+        });
+
+        // Load all section schemas
+        $schemas = collect(config('sections'))
+            ->map(fn($def, $type) => SectionSchema::for($type)->definition());
+
+        return view('admin.editor.editor', [
+            'page' => $page,
+            'pageSlug' => $slug,
+            'content' => $page->content ?? [],
+            'globalSettings' => $globalSettings,
+            'schemas' => $schemas,
+            'previewUrl' => route('admin.editor.preview', $slug) . "?editor=1&_t=" . time(),
+        ]);
     }
 
-    public function updateStyle(Request $r)
+    /**
+     * Preview page with JSON content
+     */
+    public function preview(string $slug)
     {
-        $sec = PageSection::findOrFail($r->section_id);
-        $sec->update(['styles' => array_merge($sec->styles ?? [], is_array($r->styles) ? $r->styles : [])]);
-        return response()->json(['ok' => true, 'style_string' => $sec->getStyleString()]);
-    }
-
-    public function updateContent(Request $r)
-    {
-        $sec = PageSection::findOrFail($r->section_id);
-        $content = is_array($r->content) ? $r->content : [];
+        $page = Page::where('slug', $slug)->firstOrFail();
         
-        // Intercept global settings
-        foreach($content as $key => $value) {
-            if (str_starts_with($key, 'el_setting:')) {
-                $settingKey = substr($key, 11); // remove "el_setting:"
-                \App\Models\Setting::updateOrCreate(['key' => $settingKey], ['value' => $value]);
-                unset($content[$key]); // Don't save it to section
+        return view('page', [
+            'page' => $page,
+            'content' => $page->content ?? []
+        ]);
+    }
+
+    /**
+     * Save page content (JSON)
+     */
+    public function save(Request $request, string $slug)
+    {
+        $page = Page::where('slug', $slug)->firstOrFail();
+        
+        $validated = $request->validate([
+            'content' => 'required|array',
+        ]);
+
+        // Optional: Perform schema validation here
+        foreach ($validated['content'] as $section) {
+            $type = $section['type'] ?? null;
+            $schema = SectionSchema::tryFor($type);
+            if ($schema) {
+                // $errors = $schema->validate($section['props'] ?? []);
+                // if (!empty($errors)) ...
             }
         }
-        
-        $sec->update(['content' => array_merge($sec->content ?? [], $content)]);
-        return response()->json(['ok' => true]);
+
+        $page->update(['content' => $validated['content']]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Page content saved successfully',
+        ]);
     }
 
-    public function toggleVisibility(Request $r)
+    /**
+     * Publish page changes
+     */
+    public function publish(string $slug)
     {
-        $sec = PageSection::findOrFail($r->section_id);
-        $sec->update(['is_visible' => $r->is_visible]);
-        return response()->json(['ok' => true]);
+        $page = Page::where('slug', $slug)->firstOrFail();
+        $page->publish();
+        Artisan::call('view:clear');
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Page published successfully',
+        ]);
     }
 
-    public function reorder(Request $r)
-    {
-        if (is_array($r->order)) {
-            foreach ($r->order as $i => $id) {
-                PageSection::where('id', $id)->update(['sort_order' => $i]);
-            }
-        }
-        return response()->json(['ok' => true]);
-    }
-
-    public function publish($slug)
-    {
-        PageSection::forPage($slug)->update(['published_at' => now()]);
-        return response()->json(['ok' => true, 'message' => 'Page published']);
-    }
-
+    /**
+     * Upload image for a section
+     */
     public function uploadImage(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|max:5120',
+            'image' => 'required|image|max:5120', // 5MB max
         ]);
 
-        if ($request->hasFile('image')) {
+        try {
             $path = $request->file('image')->store('editor', 'public');
-            return response()->json(['ok' => true, 'url' => url('storage/' . $path)]);
+            return response()->json([
+                'url' => \Illuminate\Support\Facades\Storage::url($path),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Upload failed: ' . $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json(['ok' => false], 400);
     }
 }
+

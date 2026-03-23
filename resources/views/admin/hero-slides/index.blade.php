@@ -30,6 +30,13 @@
                     <input type="checkbox" name="is_active" value="1" onchange="this.form.submit()" class="w-4 h-4 accent-teal bg-ink border-white/20" {{ $slide->is_active ? 'checked' : '' }}>
                 </div>
                 
+                <div class="flex flex-col gap-1">
+                    <label class="font-mono text-[10px] uppercase text-teal">Alt Text</label>
+                    <input type="text" name="image_alt" value="{{ $slide->image_alt ?? '' }}"
+                           placeholder="Describe this image..." onchange="this.form.submit()"
+                           class="bg-ink border border-white/10 text-white text-xs px-2 py-1 rounded-sm w-full">
+                </div>
+                
                 <div class="flex items-center justify-between gap-3">
                     <label class="font-mono text-[10px] uppercase text-teal whitespace-nowrap">Overlay (<span id="val-{{ $slide->id }}">{{ $slide->overlay_opacity }}</span>)</label>
                     <input type="range" name="overlay_opacity" min="0" max="1" step="0.05" value="{{ $slide->overlay_opacity }}" oninput="document.getElementById('val-{{ $slide->id }}').innerText = this.value" onchange="this.form.submit()" class="w-full accent-teal">
@@ -50,7 +57,8 @@
             @csrf
             <div>
                 <label class="font-mono text-[10px] uppercase tracking-wider text-teal block mb-2">Option 1: Image URL</label>
-                <input type="text" name="image_url" id="image_url_input" required placeholder="https://..." class="w-full bg-ink border border-white/10 text-white font-serif text-[13px] px-3 py-2 focus:border-teal outline-none rounded-sm">
+                <input type="text" name="image_url" id="image_url_input" value="{{ old('image_url') }}" required placeholder="https://..." class="w-full bg-ink border border-white/10 text-white font-serif text-[13px] px-3 py-2 focus:border-teal outline-none rounded-sm">
+                @error('image_url') <span class="text-red-400 text-[10px] mt-1 block">{{ $message }}</span> @enderror
             </div>
             <div>
                 <label class="font-mono text-[10px] uppercase tracking-wider text-teal block mb-2">Overlay Opacity</label>
@@ -129,10 +137,13 @@ document.addEventListener('DOMContentLoaded', function() {
             let json = await res.json();
             if (res.ok && json.url) {
                 urlInput.value = json.url;
-                status.innerText = 'Uploaded successfully!';
+                status.innerText = 'Uploaded! Saving slide...';
                 status.classList.remove('hidden');
                 status.classList.add('text-teal');
                 fileInput.value = '';
+                
+                // Auto-submit
+                urlInput.closest('form').submit();
             } else {
                 throw new Error(json.message || 'Upload failed');
             }
@@ -141,7 +152,9 @@ document.addEventListener('DOMContentLoaded', function() {
             status.classList.remove('hidden');
             status.classList.add('text-red-400');
         } finally {
-            uploadBtn.innerHTML = originalText;
+            if (uploadBtn.innerHTML === 'Uploading...') {
+                uploadBtn.innerHTML = originalText;
+            }
         }
     });
 });

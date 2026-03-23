@@ -13,7 +13,8 @@
         <div class="flex border-b border-gray-200 mb-8 overflow-x-auto overflow-y-hidden">
             <button type="button" @click="activeTab = 'general'" class="font-display font-bold text-[12px] uppercase tracking-wider px-6 py-4 border-b-2 transition-colors whitespace-nowrap" :class="activeTab === 'general' ? 'border-teal text-teal-700' : 'border-transparent text-gray-500 hover:text-ink'">General Info</button>
             <button type="button" @click="activeTab = 'contact'" class="font-display font-bold text-[12px] uppercase tracking-wider px-6 py-4 border-b-2 transition-colors whitespace-nowrap" :class="activeTab === 'contact' ? 'border-teal text-teal-700' : 'border-transparent text-gray-500 hover:text-ink'">Contact & Social</button>
-            <button type="button" @click="activeTab = 'hero'" class="font-display font-bold text-[12px] uppercase tracking-wider px-6 py-4 border-b-2 transition-colors whitespace-nowrap" :class="activeTab === 'hero' ? 'border-teal text-teal-700' : 'border-transparent text-gray-500 hover:text-ink'">Hero Section</button>
+            <button type="button" @click="activeTab = 'hero'" class="font-display font-bold text-[12px] uppercase tracking-wider px-6 py-4 border-b-2 transition-colors whitespace-nowrap" :class="activeTab === 'hero' ? 'border-teal text-teal-700' : 'border-transparent text-gray-500 hover:text-ink'">Hero Headlines</button>
+            <button type="button" @click="activeTab = 'services'" class="font-display font-bold text-[12px] uppercase tracking-wider px-6 py-4 border-b-2 transition-colors whitespace-nowrap" :class="activeTab === 'services' ? 'border-teal text-teal-700' : 'border-transparent text-gray-500 hover:text-ink'">Services</button>
             <button type="button" @click="activeTab = 'about'" class="font-display font-bold text-[12px] uppercase tracking-wider px-6 py-4 border-b-2 transition-colors whitespace-nowrap" :class="activeTab === 'about' ? 'border-teal text-teal-700' : 'border-transparent text-gray-500 hover:text-ink'">About Section</button>
             <button type="button" @click="activeTab = 'stats'" class="font-display font-bold text-[12px] uppercase tracking-wider px-6 py-4 border-b-2 transition-colors whitespace-nowrap" :class="activeTab === 'stats' ? 'border-teal text-teal-700' : 'border-transparent text-gray-500 hover:text-ink'">Statistics</button>
         </div>
@@ -93,7 +94,12 @@
 
             <!-- Hero Tab -->
             <div x-show="activeTab === 'hero'" x-transition.opacity style="display: none;" class="admin-card p-6 md:p-8">
-                <h3 class="font-display font-bold text-lg mb-6 border-b border-gray-100 pb-4 text-ink">Home Hero Section</h3>
+                <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                    <h3 class="font-display font-bold text-lg text-ink">Home Hero Headlines</h3>
+                    <a href="{{ route('admin.hero-slides.index') }}" class="font-mono text-[10px] uppercase tracking-widest bg-ink text-white px-3 py-1.5 rounded hover:bg-teal hover:text-ink transition-colors">
+                        Manage Background Images →
+                    </a>
+                </div>
                 
                 <div class="grid grid-cols-1 gap-6 mb-6">
                     <div>
@@ -110,23 +116,43 @@
                     </div>
                     
                     <div>
+                        <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Hero Tagline (small text above heading)</label>
+                        <input type="text" name="settings[hero_tagline]" value="{{ $settingsData['hero_tagline'] ?? '' }}" class="admin-input w-full p-3 font-mono text-[13px]" />
+                    </div>
+                    <div>
+                        <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Primary CTA Button Text</label>
+                        <input type="text" name="settings[hero_cta_primary]" value="{{ $settingsData['hero_cta_primary'] ?? '' }}" class="admin-input w-full p-3 font-mono text-[13px]" />
+                    </div>
+                    <div>
+                        <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Secondary CTA Button Text</label>
+                        <input type="text" name="settings[hero_cta_secondary]" value="{{ $settingsData['hero_cta_secondary'] ?? '' }}" class="admin-input w-full p-3 font-mono text-[13px]" />
+                    </div>
+                    <div>
                         <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Hero Subtext</label>
                         <textarea name="settings[hero_subtext]" rows="3" class="admin-input w-full p-3 font-serif text-[14px]">{{ $settingsData['hero_subtext'] ?? '' }}</textarea>
                     </div>
-                    
+                </div>
+            </div>
+
+            <!-- Services Tab -->
+            <div x-show="activeTab === 'services'" x-transition.opacity style="display: none;" class="admin-card p-6 md:p-8">
+                <h3 class="font-display font-bold text-lg mb-6 border-b border-gray-100 pb-4 text-ink">Services Section</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500">Hero Background Image</label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="hidden" name="settings[show_hero_image]" value="0">
-                                <input type="checkbox" name="settings[show_hero_image]" value="1" {{ ($settingsData['show_hero_image'] ?? '1') == '1' ? 'checked' : '' }} class="w-3 h-3 text-teal bg-white border-gray-300 rounded focus:ring-teal focus:ring-2">
-                                <span class="font-mono text-[10px] uppercase tracking-wider text-gray-500">Show Section</span>
-                            </label>
-                        </div>
-                        <input type="file" name="settings_files[hero_image_url]" accept="image/*" class="admin-input w-full p-3 font-mono text-[13px]">
-                        @if(!empty($settingsData['hero_image_url']))
-                            <div class="mt-2 h-32 w-48 bg-cover bg-center border border-gray-200 shadow-sm" style="background-image: url('{{ $settingsData['hero_image_url'] }}')"></div>
-                        @endif
+                        <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Trading Service Title</label>
+                        <input type="text" name="settings[service_trading_title]" value="{{ $settingsData['service_trading_title'] ?? '' }}" class="admin-input w-full p-3 font-semibold" />
+                    </div>
+                    <div>
+                        <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Logistics Service Title</label>
+                        <input type="text" name="settings[service_logistics_title]" value="{{ $settingsData['service_logistics_title'] ?? '' }}" class="admin-input w-full p-3 font-semibold" />
+                    </div>
+                    <div>
+                        <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Warehousing Service Title</label>
+                        <input type="text" name="settings[service_warehousing_title]" value="{{ $settingsData['service_warehousing_title'] ?? '' }}" class="admin-input w-full p-3 font-semibold" />
+                    </div>
+                    <div>
+                        <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Insights Service Title</label>
+                        <input type="text" name="settings[service_insights_title]" value="{{ $settingsData['service_insights_title'] ?? '' }}" class="admin-input w-full p-3 font-semibold" />
                     </div>
                 </div>
             </div>

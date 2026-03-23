@@ -1,4 +1,11 @@
-<footer data-section-id="9999" data-section-key="footer" data-section-label="Global Footer" class="bg-ink text-white pt-20 pb-6 border-t-[4px] border-teal">
+<footer 
+    @if(isset($footerSection))
+        data-section-id="{{ $footerSection->id }}" 
+        data-section-key="footer" 
+        data-section-label="Global Footer"
+        style="{{ $footerSection->getStyleString() }}"
+    @endif
+    class="bg-ink text-white pt-20 pb-6 border-t-[4px] border-teal">
     <div class="max-w-[1400px] mx-auto px-4 md:px-8">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             <!-- Brand -->
@@ -9,16 +16,16 @@
                         <div class="h-[3px] bg-teal-2 w-full mt-auto"></div>
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-display font-bold text-sm leading-tight text-white uppercase tracking-wider">AUXINOR</span>
-                        <span class="font-mono text-[10px] text-muted">Chemicals LLP</span>
+                        <span data-element-id="footer_brand_name" data-element-type="text" class="font-display font-bold text-sm leading-tight text-white uppercase tracking-wider">AUXINOR</span>
+                        <span data-element-id="footer_brand_suffix" data-element-type="text" class="font-mono text-[10px] text-muted">Chemicals LLP</span>
                     </div>
                 </a>
-                <p data-element-id="setting:footer_tagline" class="font-serif italic text-[13px] text-white/60 mb-6 leading-relaxed">
+                <p data-element-id="el_setting:footer_tagline" class="font-serif italic text-[13px] text-white/60 mb-6 leading-relaxed">
                     {{ $globalSettings['footer_tagline'] ?? "Chemical trading, distribution, and market intelligence — serving India's industrial sector with trust, accountability, and quality." }}
                 </p>
                 <div class="flex space-x-4">
-                    <a data-element-id="setting:social_facebook" href="{{ $globalSettings['social_facebook'] ?? '#' }}" class="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-white/60 hover:text-teal hover:border-teal transition-colors">FB</a>
-                    <a data-element-id="setting:social_linkedin" href="{{ $globalSettings['social_linkedin'] ?? '#' }}" class="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-white/60 hover:text-teal hover:border-teal transition-colors">IN</a>
+                    <a data-element-id="el_setting:social_facebook" href="{{ $globalSettings['social_facebook'] ?? '#' }}" class="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-white/60 hover:text-teal hover:border-teal transition-colors">FB</a>
+                    <a data-element-id="el_setting:social_linkedin" href="{{ $globalSettings['social_linkedin'] ?? '#' }}" class="w-8 h-8 rounded border border-white/10 flex items-center justify-center text-white/60 hover:text-teal hover:border-teal transition-colors">IN</a>
                 </div>
             </div>
 
@@ -26,8 +33,22 @@
             <div>
                 <h4 class="font-display font-bold uppercase text-[12px] tracking-wider mb-6 text-teal-light">Core Categories</h4>
                 <ul class="space-y-3">
-                    @foreach(($globalCategories ?? [])->take(5) as $cat)
-                        <li><a href="{{ route('products.category', $cat->slug) }}" class="font-mono text-[11px] text-white/60 hover:text-teal-2 transition-colors">{{ $cat->name }}</a></li>
+                    @php
+                        $cats = Schema::hasTable('product_categories')
+                            ? \App\Models\ProductCategory::active()->ordered()->take(5)->get()
+                            : collect();
+                    @endphp
+                    @foreach($cats as $cat)
+                        @php
+                            $slug = ''; $name = '';
+                            if (is_object($cat) && get_class($cat) !== '__PHP_Incomplete_Class') {
+                                $slug = $cat->slug;
+                                $name = $cat->name;
+                            }
+                        @endphp
+                        @if(!empty($slug))
+                            <li><a href="{{ route('products.category', $slug) }}" class="font-mono text-[11px] text-white/60 hover:text-teal-2 transition-colors">{{ $name }}</a></li>
+                        @endif
                     @endforeach
                     <li><a href="{{ route('products.index') }}" class="font-mono text-[11px] text-teal hover:text-white transition-colors mt-2 inline-block">View All Products →</a></li>
                 </ul>
@@ -51,15 +72,15 @@
                 <div class="space-y-4">
                     <div>
                         <span class="block font-mono text-[9px] uppercase tracking-wider text-teal-2 mb-1">Corporate Office</span>
-                        <p class="font-serif text-[13px] text-white/60">{{ $globalSettings['office_address'] ?? 'Ahmedabad, Gujarat' }}</p>
+                        <p data-element-id="footer_address" data-element-type="text" class="font-serif text-[13px] text-white/60">{{ $globalSettings['office_address'] ?? 'Ahmedabad, Gujarat' }}</p>
                     </div>
                     <div>
                         <span class="block font-mono text-[9px] uppercase tracking-wider text-teal-2 mb-1">Call Us</span>
-                        <a href="tel:{{ $globalSettings['phone_primary'] ?? '' }}" class="font-mono text-[12px] text-white hover:text-teal-2 transition-colors block">{{ $globalSettings['phone_primary'] ?? '+91' }}</a>
+                        <a data-element-id="footer_phone" data-element-type="text" href="tel:{{ $globalSettings['phone_primary'] ?? '' }}" class="font-mono text-[12px] text-white hover:text-teal-2 transition-colors block">{{ $globalSettings['phone_primary'] ?? '+91' }}</a>
                     </div>
                     <div>
                         <span class="block font-mono text-[9px] uppercase tracking-wider text-teal-2 mb-1">Email</span>
-                        <a href="mailto:{{ $globalSettings['email_sales'] ?? '' }}" class="font-mono text-[12px] text-white hover:text-teal-2 transition-colors block">{{ $globalSettings['email_sales'] ?? 'sales@auxinorchem.com' }}</a>
+                        <a data-element-id="footer_email" data-element-type="text" href="mailto:{{ $globalSettings['email_sales'] ?? '' }}" class="font-mono text-[12px] text-white hover:text-teal-2 transition-colors block">{{ $globalSettings['email_sales'] ?? 'sales@auxinorchem.com' }}</a>
                     </div>
                 </div>
             </div>

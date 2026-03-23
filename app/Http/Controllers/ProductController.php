@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ProductCategory;
 use App\Models\Product;
+use App\Models\Page;
 
 class ProductController extends Controller
 {
@@ -12,7 +13,10 @@ class ProductController extends Controller
     {
         $categories = ProductCategory::with(['products' => fn($q) => $q->active()->ordered()])->active()->ordered()->get();
         $allProducts = Product::with('category')->active()->ordered()->paginate(20);
-        return view('products.index', compact('categories', 'allProducts'));
+        $page = Page::query()->where('slug', 'products')->active()->first();
+        $sections = collect($page->content ?? []);
+        $pageSections = $sections->keyBy('type');
+        return view('products.index', compact('categories', 'allProducts', 'pageSections', 'sections'));
     }
 
     public function byCategory(Request $request, $slug)

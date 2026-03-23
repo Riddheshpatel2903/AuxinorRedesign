@@ -12,6 +12,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        /* Prevent layout shift during Alpine.js initialization */
+        [x-cloak] { display: none !important; }
+
+        /* Prevent FOUC on sections with DB style values */
+        [data-section-id] { transition: background-color 0.3s ease, opacity 0.3s ease; }
+    </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col">
     @include('partials.topbar')
@@ -25,9 +32,9 @@
     
     @stack('scripts')
     
-    @if(auth()->check())
+    @if(auth()->check() && auth()->user()->is_admin)
         <!-- Admin CMS Controls -->
-        <div class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3">
+        <!-- <div class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3">
             <a href="{{ route('admin.editor.index') }}" class="bg-teal text-ink font-mono text-[10px] uppercase font-bold tracking-widest px-5 py-3 rounded-sm shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-teal-light flex items-center hover:scale-105 transition-transform">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                 Visual Editor
@@ -36,7 +43,7 @@
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                 Manage Products
             </a>
-        </div>
+        </div> -->
         
         @if(!request()->has('editor_mode'))
         <style>
@@ -88,12 +95,20 @@
             });
         </script>
         @endif
-        @if(request()->has('editor_mode') && auth()->check())
+        @if(request()->has('editor_mode') && auth()->check() && auth()->user()->is_admin)
             <script src="{{ asset('js/editor-receiver.js') }}"></script>
             <script>
+                // Alpine stubs for editor mode to prevent console errors
+                if (typeof window.enquiryForm === 'undefined') {
+                    window.enquiryForm = () => ({
+                        formData: { company_name: '', contact_person: '', email: '', phone: '', product_category: '', quantity: '', message: '' },
+                        loading: false, message: '', success: false,
+                        submitForm() { console.log('Enquiry form submit blocked in editor mode'); }
+                    });
+                }
+
                 document.addEventListener('click', e => {
                     const link = e.target.closest('a');
-                    // Prevent navigation on links inside the editor, but let editor JS handle the rest
                     if (link && !link.hasAttribute('target')) {
                         e.preventDefault();
                     }
@@ -108,10 +123,14 @@
                     min-height: 40px;
                 }
                 body.editor-mode [data-element-id] {
-                    outline: 1px dashed transparent;
+                    outline: 1px dashed rgba(18,160,142,0.5);
                     outline-offset: 2px;
-                    transition: outline-color .15s;
-                    cursor: text;
+                    transition: all .2s;
+                    cursor: pointer;
+                }
+                body.editor-mode [data-element-id]:hover {
+                    outline-color: #f59e0b;
+                    background: rgba(245,158,11,0.05);
                 }
                 body.editor-mode [data-section-id]:hover::before {
                     content: attr(data-section-label);
@@ -126,68 +145,5 @@
         @endif
     @endif
     
-    @php
-        $cmsSections = \App\Models\PageSection::forPage(request()->path() === '/' ? 'home' : request()->path())->get();
-    @endphp
-    @if($cmsSections->count() > 0)
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const cmsData = @json($cmsSections);
-            cmsData.forEach(sec => {
-                const secEl = document.querySelector(`[data-section-id="${sec.id}"]`);
-                if (!secEl) return;
-                
-                // Visible?
-                if (sec.is_visible === 0) secEl.style.display = 'none';
-                
-                // Section Background?
-                if (sec.content && sec.content.bg_image_url) {
-                    secEl.style.backgroundImage = `url('${sec.content.bg_image_url}')`;
-                    secEl.style.backgroundSize = 'cover';
-                    secEl.style.backgroundPosition = 'center';
-                    if (sec.content.bg_overlay !== undefined) {
-                        let ov = secEl.querySelector('.ed-bg-overlay');
-                        if (!ov) {
-                            ov = document.createElement('div');
-                            ov.className = 'ed-bg-overlay';
-                            ov.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1';
-                            secEl.style.position = 'relative';
-                            secEl.prepend(ov);
-                        }
-                        ov.style.background = `rgba(13,17,23,${sec.content.bg_overlay})`;
-                    }
-                }
-                
-                // Section Styles
-                if (sec.styles) Object.assign(secEl.style, sec.styles);
-                
-                // Loop Content Nodes for elements
-                if (sec.content) {
-                    Object.keys(sec.content).forEach(key => {
-                        if (key.startsWith('el_href_')) {
-                            const elId = key.replace('el_href_', '');
-                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
-                            if (node) node.href = sec.content[key];
-                        } else if (key.startsWith('el_style_')) {
-                            const elId = key.replace('el_style_', '');
-                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
-                            if (node && typeof sec.content[key] === 'object') {
-                                Object.assign(node.style, sec.content[key]);
-                            }
-                        } else if (key.startsWith('el_')) {
-                            const elId = key.replace('el_', '');
-                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
-                            if (node && key !== 'el_href_'+elId && key !== 'el_style_'+elId) {
-                                // Important: We ONLY overwrite innerHTML if there's no nested content we're worried about destroying.
-                                // Actually yes, if it's a simple text element we just set it.
-                                node.innerHTML = sec.content[key];
-                            }
-                        }
-                    });
-                }
-            });
-        });
-    </script>
-    @endif
 </body>
 </html>

@@ -4,168 +4,97 @@ function emit(action, payload) {
   window.parent.postMessage({ src: 'auxinor-site', action, payload }, '*')
 }
 
-// Intercept all links and buttons globally in editor mode
+// Global click interceptor
 document.addEventListener('click', e => {
+  if (!document.body.classList.contains('editor-mode')) return;
+
+  // Intercept links and buttons
   const link = e.target.closest('a');
   if (link && !link.hasAttribute('target')) e.preventDefault();
   const btn = e.target.closest('button, input[type="submit"]');
   if (btn) e.preventDefault();
+
+  // Handle Element Selection
+  const el = e.target.closest('[data-element-key]');
+  if (el) {
+    e.stopPropagation();
+    const sec = el.closest('[data-section-index]');
+    emit('element-click', {
+      id: sec?.dataset.sectionIndex, // Treat index as the ID for editor.js compatibility
+      key: el.dataset.elementKey,
+      type: el.dataset.elementType || 'text',
+      index: sec?.dataset.sectionIndex
+    });
+    highlightElement(el);
+    return;
+  }
+
+  // Handle Section Selection
+  const sec = e.target.closest('[data-section-index]');
+  if (sec) {
+    e.stopPropagation();
+    emit('section-click', {
+      id: sec.dataset.sectionIndex,
+      type: sec.dataset.sectionType,
+      label: sec.dataset.sectionType
+    });
+    highlightSection(sec);
+    return;
+  }
+
+  // Deselect if clicking background
+  emit('deselect', {});
 }, true);
 
-function getStyles(el) {
-  const cs = window.getComputedStyle(el)
-  return ['fontSize','fontWeight','fontFamily','color','backgroundColor',
-    'paddingTop','paddingBottom','paddingLeft','paddingRight',
-    'marginTop','marginBottom','width','height','minHeight',
-    'display','alignItems','justifyContent','gridTemplateColumns',
-    'gap','letterSpacing','lineHeight'].reduce((o,p) => ({...o,[p]:cs[p]}),{})
+function highlightElement(el) {
+    document.querySelectorAll('[data-editing]').forEach(e => e.removeAttribute('data-editing'));
+    el.setAttribute('data-editing', 'true');
 }
 
-// Make sections selectable
-document.querySelectorAll('[data-section-id]').forEach(sec => {
-  sec.style.cursor = 'pointer'
-  sec.style.outline = '2px solid transparent'
-  sec.style.outlineOffset = '-2px'
-  sec.style.transition = 'outline-color .15s'
+function highlightSection(sec) {
+    document.querySelectorAll('.ed-sel').forEach(s => {
+        s.style.outlineColor = 'transparent'; 
+        s.classList.remove('ed-sel');
+    });
+    sec.style.outlineColor = '#f59e0b';
+    sec.classList.add('ed-sel');
+    sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
-  sec.addEventListener('mouseenter', () => {
-    if (!sec.classList.contains('ed-sel'))
-      sec.style.outlineColor = 'rgba(18,160,142,0.4)'
-  })
-  sec.addEventListener('mouseleave', () => {
-    if (!sec.classList.contains('ed-sel'))
-      sec.style.outlineColor = 'transparent'
-  })
-  sec.addEventListener('click', e => {
-    if (e.target.closest('[data-element-id]')) return
-    e.stopPropagation()
-    document.querySelectorAll('[data-section-id]').forEach(s => {
-      s.style.outlineColor = 'transparent'; s.classList.remove('ed-sel')
-    })
-    sec.style.outlineColor = '#f59e0b'
-    sec.classList.add('ed-sel')
-    emit('section-click', {
-      id: sec.dataset.sectionId, key: sec.dataset.sectionKey,
-      label: sec.dataset.sectionLabel, styles: getStyles(sec)
-    })
-  })
-})
-
-// Auto-tag all meaningful child elements
-document.querySelectorAll('[data-section-id]').forEach(sec => {
-  const sid = sec.dataset.sectionId;
-  const tags = ['h1','h2','h3','h4','h5','p','span','a','button','img','div','li','label'];
-  let counter = 0;
-  
-  // Recursively tag elements, avoiding editor UI elements
-  const tagNode = (node) => {
-    if (node.nodeType !== 1) return;
-    if (node.classList.contains('ed-bg-overlay')) return;
-    
-    // Only tag meaningful visual elements
-    if (tags.includes(node.tagName.toLowerCase())) {
-      if (!node.hasAttribute('data-element-id')) {
-        node.dataset.elementId = `auto_${sid}_${node.tagName.toLowerCase()}_${counter++}`;
-        node.dataset.elementType = node.tagName.toLowerCase();
-        node.dataset.elementKey = `${node.tagName.toLowerCase()} ${counter}`;
-      }
-    }
-    
-    Array.from(node.children).forEach(tagNode);
-  };
-  
-  Array.from(sec.children).forEach(tagNode);
-});
-
-// Make elements selectable
-document.querySelectorAll('[data-element-id]').forEach(el => {
-  el.style.cursor = 'pointer' // changed to pointer to imply clickability
-  el.addEventListener('mouseenter', (e) => {
-    e.stopPropagation();
-    el.style.outline = '1px dashed rgba(18,160,142,0.8)';
-    el.style.outlineOffset = '2px';
-  })
-  el.addEventListener('mouseleave', (e) => {
-    e.stopPropagation();
-    el.style.outline = 'transparent';
-  })
-  el.addEventListener('click', e => {
-    e.stopPropagation()
-    e.preventDefault()
-    emit('element-click', {
-      id: el.dataset.elementId, key: el.dataset.elementKey,
-      type: el.dataset.elementType || 'text',
-      content: el.innerText, tag: el.tagName.toLowerCase(),
-      href: el.href || el.getAttribute('href') || '', styles: getStyles(el)
-    })
-  })
-})
-
-// Deselect on body click
-document.addEventListener('click', e => {
-  if (!e.target.closest('[data-section-id]')) emit('deselect', {})
-})
-
-// Receive commands from parent editor
 window.addEventListener('message', e => {
   if (e.data?.src !== 'auxinor-editor') return
   const { action, payload } = e.data
-
+  
   if (action === 'apply-style') {
-    const t = payload.elementId
-      ? document.querySelector('[data-element-id="'+payload.elementId+'"]')
-      : document.querySelector('[data-section-id="'+payload.sectionId+'"]')
-    if (t) t.style[payload.prop] = payload.value
+    const sec = document.querySelector(`[data-section-index="${payload.index}"]`);
+    const target = payload.key 
+        ? sec?.querySelector(`[data-element-key="${payload.key}"]`)
+        : sec;
+    
+    if (target) {
+        const kebab = payload.prop.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        target.style.setProperty(kebab, payload.value);
+    }
   }
 
   if (action === 'apply-content') {
-    const el = document.querySelector('[data-element-id="'+payload.elementId+'"]')
-    if (el) { el.innerHTML = payload.content; if (payload.href) el.href = payload.href }
-  }
-
-  if (action === 'apply-bg') {
-    const sec = document.querySelector('[data-section-id="'+payload.sectionId+'"]')
-    if (!sec) return
-    sec.style.backgroundImage = `url('${payload.url}')`
-    sec.style.backgroundSize = 'cover'
-    sec.style.backgroundPosition = 'center'
-    let ov = sec.querySelector('.ed-bg-overlay')
-    if (!ov) {
-      ov = document.createElement('div')
-      ov.className = 'ed-bg-overlay'
-      ov.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1'
-      sec.style.position = 'relative'
-      sec.prepend(ov)
+    const sec = document.querySelector(`[data-section-index="${payload.index}"]`);
+    const el = sec?.querySelector(`[data-element-key="${payload.val.key || payload.key}"]`);
+    if (el) {
+        if (el.tagName === 'IMG') {
+            el.src = payload.val;
+        } else {
+            el.innerHTML = payload.val;
+        }
     }
-    ov.style.background = `rgba(13,17,23,${payload.opacity})`
   }
 
-  if (action === 'toggle-vis') {
-    const sec = document.querySelector('[data-section-id="'+payload.sectionId+'"]')
-    if (sec) sec.style.display = payload.visible ? '' : 'none'
+  if (action === 'reload-preview') {
+      window.location.reload();
   }
 
   if (action === 'highlight-section') {
-    document.querySelectorAll('[data-section-id]').forEach(s => {
-      s.style.outlineColor = 'transparent'; s.classList.remove('ed-sel')
-    })
-    const sec = document.querySelector('[data-section-id="'+payload.sectionId+'"]')
-    if (sec) {
-      sec.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      sec.style.outlineColor = '#f59e0b'
-      sec.classList.add('ed-sel')
-    }
+      const sec = document.querySelector(`[data-section-index="${payload.index}"]`);
+      if (sec) highlightSection(sec);
   }
-
-  if (action === 'apply-anim') {
-    const sec = document.querySelector('[data-section-id="'+payload.sectionId+'"]')
-    if (!sec) return
-    ['sr','sr-l','sr-r','sr-up','sr-bounce','sr-stagger'].forEach(c =>
-      sec.classList.remove(c))
-    if (payload.animClass) {
-      sec.classList.remove('animated')
-      sec.classList.add(payload.animClass)
-      setTimeout(() => sec.classList.add('animated'), 100)
-    }
-  }
-})
+});

@@ -36,6 +36,14 @@
             <form action="{{ route('admin.login.submit') }}" method="POST">
                 @csrf
                 
+                {{-- Session error (e.g. non-admin account tried to log in) --}}
+                @if(session('error'))
+                    <div class="mb-6 p-4 border border-red-500/50 bg-red-900/20 text-red-200 font-mono text-[11px] uppercase tracking-wider">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                {{-- Validation errors (wrong password, etc.) --}}
                 @if($errors->any())
                     <div class="mb-6 p-4 border border-red-500/50 bg-red-900/20 text-red-200 font-mono text-[11px]">
                         @foreach($errors->all() as $error)

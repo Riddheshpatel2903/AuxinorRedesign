@@ -1,377 +1,349 @@
+let data = typeof PAGE_CONTENT !== 'undefined' ? PAGE_CONTENT : [];
+const schemas = typeof SCHEMAS !== 'undefined' ? SCHEMAS : {};
 const state = {
-  sectionId: null, elementId: null, sectionKey: null,
-  pending: { styles: {}, content: {} }, undoStack: [], dirty: false
-}
+    activeSectionIdx: null,
+    elementKey: null,
+    dirty: false
+};
 
-function post(action, payload) {
-  document.getElementById('pageFrame').contentWindow
-    .postMessage({ src: 'auxinor-editor', action, payload }, '*')
-}
+// ============================================================
+// COMMUNICATION UTILS
+// ============================================================
 
-function api(url, data) {
-  return fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type':'application/json',
-               'X-CSRF-TOKEN': CSRF, 'Accept':'application/json' },
-    body: JSON.stringify(data)
-  }).then(r => r.json())
-}
-
-window.addEventListener('message', e => {
-  if (e.data?.src !== 'auxinor-site') return
-  const { action, payload } = e.data
-  if (action === 'section-click') {
-    state.sectionId = payload.id
-    state.sectionKey = payload.key
-    state.elementId = null
-    document.getElementById('sbSection').textContent = 'Section: ' + payload.label
-    document.getElementById('styleEmpty').style.display = 'none'
-    document.getElementById('styleForm').style.display = 'block'
-    populateControls(payload.styles)
-    updateLayers(payload.id)
-    document.getElementById('heroSlidesGroup').style.display =
-      payload.key === 'hero' ? 'block' : 'none'
-  }
-  if (action === 'element-click') {
-    state.elementId = payload.id
-    document.getElementById('sbEl').textContent = 'El: ' + payload.key
-    document.getElementById('c-text').value = payload.content
-    document.getElementById('c-tag').value = payload.tag
-    document.getElementById('c-href').value = payload.href || ''
-    
-    const hrefField = document.getElementById('hrefField');
-    if(hrefField) {
-      hrefField.style.display = (payload.tag === 'a' || payload.href) ? 'flex' : 'none';
+function postToFrame(action, payload) {
+    const frame = document.getElementById('pageFrame');
+    if (frame && frame.contentWindow) {
+        frame.contentWindow.postMessage({ src: 'auxinor-editor', action, payload }, '*');
     }
-
-    populateControls(payload.styles)
-  }
-  if (action === 'deselect') {
-    state.sectionId = null; state.elementId = null
-    document.getElementById('sbSection').textContent = 'No section selected'
-    document.getElementById('sbEl').textContent = ''
-  }
-})
-
-function applyProp(prop, value) {
-  if (!state.sectionId) return;
-  state.undoStack.push({ sectionId: state.sectionId,
-                         elementId: state.elementId, prop, value });
-  post('apply-style', { sectionId: state.sectionId,
-                        elementId: state.elementId, prop, value });
-  
-  if (state.elementId) {
-    if (!state.pending.content) state.pending.content = {};
-    if (!state.pending.content[state.sectionId]) state.pending.content[state.sectionId] = {};
-    if (!state.pending.content[state.sectionId][`el_style_${state.elementId}`]) {
-      state.pending.content[state.sectionId][`el_style_${state.elementId}`] = {};
-    }
-    state.pending.content[state.sectionId][`el_style_${state.elementId}`][prop] = value;
-  } else {
-    if (!state.pending.styles) state.pending.styles = {};
-    if (!state.pending.styles[state.sectionId]) state.pending.styles[state.sectionId] = {};
-    state.pending.styles[state.sectionId][prop] = value;
-  }
-  markDirty();
 }
 
-document.querySelectorAll('.sctrl').forEach(el => {
-  el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input',
-    () => applyProp(el.dataset.prop, el.value))
-})
-document.querySelectorAll('.ep-bm-val').forEach(el => {
-  el.addEventListener('change', () => applyProp(el.dataset.prop, el.value))
-})
-document.querySelectorAll('.ep-sw').forEach(sw => {
-  sw.addEventListener('click', () => {
-    applyProp('color', sw.dataset.c)
-    document.getElementById('c-color').value = sw.dataset.c
-    document.getElementById('c-color-hex').value = sw.dataset.c
-  })
-})
+async function api(url, payload, method = 'POST') {
+    try {
+        const isFormData = payload instanceof FormData;
+        const options = {
+            method: method,
+            headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
+        };
+        if (method !== 'GET' && !isFormData) {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(payload);
+        } else if (isFormData) {
+            options.body = payload;
+        }
 
-document.getElementById('c-color').addEventListener('input', function() {
-  document.getElementById('c-color-hex').value = this.value
-  applyProp('color', this.value)
-})
-document.getElementById('c-color-hex').addEventListener('change', function() {
-  document.getElementById('c-color').value = this.value
-  applyProp('color', this.value)
-})
-document.getElementById('c-bg').addEventListener('input', function() {
-  document.getElementById('c-bg-hex').value = this.value
-  applyProp('backgroundColor', this.value)
-})
-
-document.getElementById('c-text').addEventListener('input', () => {
-  const content = document.getElementById('c-text').value
-  const href    = document.getElementById('c-href').value
-  if (!state.elementId) return
-  post('apply-content', { elementId: state.elementId, content, href })
-  api(ROUTES.content, { section_id: state.sectionId,
-    content: { ['el_'+state.elementId]: content, ['el_href_'+state.elementId]: href } })
-  markDirty()
-})
-
-document.getElementById('c-href').addEventListener('input', () => {
-  const content = document.getElementById('c-text').value
-  const href    = document.getElementById('c-href').value
-  if (!state.elementId) return
-  post('apply-content', { elementId: state.elementId, content, href })
-  api(ROUTES.content, { section_id: state.sectionId,
-    content: { ['el_'+state.elementId]: content, ['el_href_'+state.elementId]: href } })
-  markDirty()
-})
-
-document.getElementById('applyTextBtn').addEventListener('click', function() {
-  this.textContent = 'Text Applied ✓'
-  setTimeout(() => this.textContent = 'Apply Text', 2000)
-})
-
-document.getElementById('applyStylesBtn')?.addEventListener('click', function() {
-  this.textContent = 'Styles Applied ✓'
-  setTimeout(() => this.textContent = 'Apply Style', 2000)
-})
-
-document.getElementById('c-bgUpload')?.addEventListener('change', async function() {
-  if (!this.files[0]) return;
-  const status = document.getElementById('uploadStatus');
-  status.textContent = 'Uploading...';
-  const formData = new FormData();
-  formData.append('image', this.files[0]);
-  try {
-    const res = await fetch(ROUTES.upload, {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-      body: formData
-    }).then(r => r.json());
-    if (res.ok && res.url) {
-      document.getElementById('c-bgUrl').value = res.url;
-      status.textContent = 'Uploaded successfully';
-      setTimeout(() => status.textContent = '', 2000);
-    } else {
-      status.textContent = 'Upload failed';
-      status.style.color = 'red';
+        const r = await fetch(url, options);
+        const res = await r.json();
+        if (!r.ok) throw new Error(res.message || 'Server Error');
+        return res;
+    } catch (err) {
+        setStatus('⚠ Error: ' + err.message, '#ef4444');
+        throw err;
     }
-  } catch (err) {
-    status.textContent = 'Error uploading';
-    status.style.color = 'red';
-  }
-});
-
-document.getElementById('c-bgUrl').addEventListener('input', () => {
-  const url = document.getElementById('c-bgUrl').value
-  const op  = document.getElementById('c-bgOverlay').value
-  post('apply-bg', { sectionId: state.sectionId, url, opacity: op })
-  api(ROUTES.content, { section_id: state.sectionId,
-    content: { bg_image_url: url, bg_overlay: op } })
-  markDirty()
-})
-
-document.getElementById('applyBgBtn').addEventListener('click', function() {
-  this.textContent = 'Background Applied ✓'
-  setTimeout(() => this.textContent = 'Apply Background', 2000)
-})
-
-document.getElementById('c-bgOverlay').addEventListener('input', function() {
-  document.getElementById('bgOverlayVal').textContent = this.value
-  const url = document.getElementById('c-bgUrl').value
-  post('apply-bg', { sectionId: state.sectionId, url, opacity: this.value })
-  api(ROUTES.content, { section_id: state.sectionId,
-    content: { bg_image_url: url, bg_overlay: this.value } })
-  markDirty()
-})
-
-document.getElementById('applyAnimBtn').addEventListener('click', () => {
-  const cls = document.getElementById('c-anim').value
-  post('apply-anim', { sectionId: state.sectionId, animClass: cls })
-  markDirty()
-})
-
-document.getElementById('vis-hide').addEventListener('click', function() {
-  this.classList.toggle('on')
-  const visible = !this.classList.contains('on')
-  post('toggle-vis', { sectionId: state.sectionId, visible })
-  api(ROUTES.visibility, { section_id: state.sectionId, is_visible: visible })
-})
-
-document.getElementById('saveBtn').addEventListener('click', async () => {
-  document.getElementById('saveBtn').textContent = 'Saving...';
-  
-  const saves = [];
-  // Save section styles
-  if (state.pending.styles) {
-    for (const [secId, styles] of Object.entries(state.pending.styles)) {
-      if (Object.keys(styles).length) {
-        saves.push(api(ROUTES.style, { section_id: secId, styles }));
-      }
-    }
-  }
-  
-  // Save element styles via content merge
-  if (state.pending.content) {
-    for (const [secId, content] of Object.entries(state.pending.content)) {
-      if (Object.keys(content).length) {
-        saves.push(api(ROUTES.content, { section_id: secId, content }));
-      }
-    }
-  }
-
-  await Promise.all(saves);
-  state.pending = { styles: {}, content: {} };
-  markClean();
-});
-
-document.getElementById('publishBtn').addEventListener('click', async () => {
-  if (!confirm('Publish all changes live?')) return
-  document.getElementById('publishBtn').textContent = 'Publishing...'
-  await api(ROUTES.publish, {})
-  document.getElementById('publishBtn').textContent = '✓ Published'
-  setTimeout(() => document.getElementById('publishBtn').textContent = 'Publish →', 2500)
-})
-
-document.getElementById('undoBtn').addEventListener('click', () => {
-  if (!state.undoStack.length) return
-  const h = state.undoStack.pop()
-  post('apply-style', { sectionId: h.sectionId, elementId: h.elementId,
-                        prop: h.prop, value: '' })
-})
-document.getElementById('undoTopBtn').addEventListener('click', () => {
-  document.getElementById('undoBtn').click()
-})
-
-document.querySelectorAll('.ed-vp').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.ed-vp').forEach(b => b.classList.remove('active'))
-    btn.classList.add('active')
-    document.getElementById('pageFrame').style.width = btn.dataset.w
-  })
-})
-
-document.querySelectorAll('.ed-ptab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.ed-ptab').forEach(b => b.classList.remove('active'))
-    document.querySelectorAll('.ed-pbody').forEach(p => p.style.display = 'none')
-    btn.classList.add('active')
-    document.getElementById('tab-'+btn.dataset.tab).style.display = 'block'
-  })
-})
-
-function buildLayers() {
-  const tree = document.getElementById('layerTree')
-  tree.innerHTML = SECTIONS.map(s => `
-    <div class="ep-layer-item" data-id="${s.id}" data-key="${s.key}"
-         onclick="clickLayer(${s.id},'${s.key}','${s.label}')">
-      <span class="ep-layer-drag">⠿</span>
-      <span>▦</span>
-      <span class="ep-layer-label">${s.label}</span>
-      <span class="ep-layer-vis ${s.visible?'on':''}"
-            onclick="event.stopPropagation();toggleLayerVis(${s.id},this)">👁</span>
-    </div>
-  `).join('')
-  new Sortable(tree, {
-    animation: 150, handle: '.ep-layer-drag',
-    onEnd: () => {
-      const order = [...tree.querySelectorAll('.ep-layer-item')]
-        .map(el => el.dataset.id)
-      api(ROUTES.reorder, { order })
-    }
-  })
 }
 
-function clickLayer(id, key, label) {
-  post('highlight-section', { sectionId: id })
-  state.sectionId = id; state.sectionKey = key
-  document.getElementById('sbSection').textContent = 'Section: ' + label
-  updateLayers(id)
-}
-
-function toggleLayerVis(id, btn) {
-  btn.classList.toggle('on')
-  const visible = btn.classList.contains('on')
-  post('toggle-vis', { sectionId: id, visible })
-  api(ROUTES.visibility, { section_id: id, is_visible: visible })
-}
-
-function updateLayers(activeId) {
-  document.querySelectorAll('.ep-layer-item').forEach(el =>
-    el.classList.toggle('active', el.dataset.id == activeId))
-}
-
-function populateControls(styles) {
-  if (!styles) return
-  Object.keys(styles).forEach(p => {
-    const ctrl = document.getElementById('c-'+p) ||
-                 document.querySelector('[data-prop="'+p+'"]')
-    if (ctrl) ctrl.value = styles[p] || ''
-  })
+function setStatus(msg, color = '#12a08e') {
+    const el = document.getElementById('sbSaved');
+    if (el) {
+        el.textContent = msg;
+        el.style.color = color;
+    }
 }
 
 function markDirty() {
-  state.dirty = true
-  document.getElementById('sbSaved').textContent = '● Unsaved'
-  document.getElementById('sbSaved').style.color = '#f59e0b'
+    state.dirty = true;
+    setStatus('● Unsaved', '#f59e0b');
 }
 
 function markClean() {
-  state.dirty = false
-  document.getElementById('saveBtn').textContent = 'Save'
-  document.getElementById('sbSaved').textContent = '✓ Saved'
-  document.getElementById('sbSaved').style.color = '#12a08e'
+    state.dirty = false;
+    setStatus('✓ Saved', '#12a08e');
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  for(let i=1; i<=4; i++) {
-     const url = SETTINGS['hero_bg_'+i];
-     const overlay = SETTINGS['hero_bg_overlay_'+i];
-     if (document.getElementById('c-hero_bg_'+i) && url) {
-         document.getElementById('c-hero_bg_'+i).value = url;
-         document.getElementById('heroStatus'+i).textContent = 'Current: ' + url.split('/').pop().substring(0,15) + '...';
-     }
-     if (document.getElementById('c-hero_bg_overlay_'+i) && overlay) {
-         document.getElementById('c-hero_bg_overlay_'+i).value = overlay;
-     }
-  }
-});
+// ============================================================
+// EDITOR CORE LOGIC
+// ============================================================
 
-for (let i = 1; i <= 4; i++) {
-  document.getElementById(`heroUpload${i}`)?.addEventListener('change', async function() {
-    if (!this.files[0]) return;
-    const status = document.getElementById(`heroStatus${i}`);
-    status.textContent = 'Uploading...';
-    const formData = new FormData();
-    formData.append('image', this.files[0]);
-    try {
-      const res = await fetch(ROUTES.upload, { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }, body: formData }).then(r => r.json());
-      if (res.ok && res.url) {
-        document.getElementById(`c-hero_bg_${i}`).value = res.url;
-        status.textContent = 'Uploaded successfully';
-        document.getElementById('applyHeroSlidesBtn').click();
-      } else {
-        status.textContent = 'Upload failed'; status.style.color = 'red';
-      }
-    } catch (err) {
-      status.textContent = 'Error uploading'; status.style.color = 'red';
+window.addEventListener('message', async e => {
+    if (e.data?.src !== 'auxinor-site') return;
+    const { action, payload } = e.data;
+
+    if (action === 'section-click' || action === 'element-click') {
+        const idx = findSectionIndex(payload.id);
+        if (idx === -1) return;
+
+        state.activeSectionIdx = idx;
+        const section = data[idx];
+        const schema = schemas[section.type] || {};
+
+        document.getElementById('sbSection').textContent = 'Section: ' + (schema.label || section.type);
+        
+        if (action === 'element-click') {
+            state.elementKey = payload.key;
+            document.getElementById('sbEl').textContent = 'El: ' + payload.key;
+        } else {
+            state.elementKey = null;
+            document.getElementById('sbEl').textContent = '';
+        }
+
+        renderFields(schema, section.props);
+        filterStyleControls(schema.styles || []);
+        updateLayersUI();
+        switchTab('content');
+
+        if (action === 'element-click') {
+            highlightField(payload.key);
+        }
     }
-  });
-}
 
-document.getElementById('applyHeroSlidesBtn')?.addEventListener('click', () => {
-  const contentUpdates = {};
-  for(let i=1; i<=4; i++) {
-    const url = document.getElementById(`c-hero_bg_${i}`).value;
-    const overlay = document.getElementById(`c-hero_bg_overlay_${i}`).value;
-    if (url) contentUpdates[`el_setting:hero_bg_${i}`] = url;
-    if (overlay) contentUpdates[`el_setting:hero_bg_overlay_${i}`] = overlay;
-  }
-  api(ROUTES.content, { section_id: state.sectionId, content: contentUpdates });
-  document.getElementById('applyHeroSlidesBtn').textContent = "Saved";
-  setTimeout(() => document.getElementById('applyHeroSlidesBtn').textContent = "Save Header Slides", 2000);
-  
-  // Reload iframe gracefully to immediately pop the changes globally on Hero section Alpine state
-  document.getElementById('pageFrame').contentWindow.location.reload();
-  
-  markDirty();
+    if (action === 'deselect') {
+        state.activeSectionIdx = null;
+        document.getElementById('sbSection').textContent = 'No section selected';
+        document.getElementById('sbEl').textContent = '';
+        updateLayersUI();
+    }
 });
 
-buildLayers()
+function findSectionIndex(id) {
+    // In the new system, we might use indices or data-attributes in the preview
+    // If the preview is still using component data-section-id, we need a mapping.
+    // For now, let's assume the preview sends the index as ID if we updated the preview components.
+    // Actually, I'll update the loop in page.blade.php to provide index.
+    return parseInt(id); 
+}
+
+function renderFields(schema, props) {
+    const container = document.getElementById('fieldsContainer');
+    const empty = document.getElementById('contentEmpty');
+    if (!container) return;
+
+    container.innerHTML = '';
+    if (empty) empty.style.display = 'none';
+
+    const fields = schema.fields || {};
+    // New simplified schema format is key => type
+    Object.entries(fields).forEach(([key, type]) => {
+        const value = props[key] || '';
+        const fieldHtml = createFieldMarkup(key, type, value);
+        container.insertAdjacentHTML('beforeend', fieldHtml);
+    });
+
+    // Bind listeners
+    container.querySelectorAll('.dynamic-input').forEach(el => {
+        el.addEventListener('input', debounce(e => {
+            updateValue(e.target.dataset.key, e.target.type === 'checkbox' ? e.target.checked : e.target.value);
+        }, 500));
+    });
+
+    container.querySelectorAll('.image-upload').forEach(el => {
+        el.addEventListener('change', async e => {
+            if (!e.target.files.length) return;
+            const res = await uploadImage(e.target.files[0]);
+            if (res && res.url) {
+                const key = e.target.dataset.key;
+                const textInput = e.target.closest('.ep-group').querySelector('input[type="text"]');
+                if (textInput) textInput.value = res.url;
+                updateValue(key, res.url);
+                const prev = e.target.closest('.ep-group').querySelector('.prev-img');
+                if (prev) {
+                    prev.src = res.url;
+                    prev.parentElement.style.display = 'flex';
+                }
+            }
+        });
+    });
+}
+
+function createFieldMarkup(key, type, value) {
+    let inputHtml = '';
+    let label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+
+    switch(type) {
+        case 'html':
+        case 'textarea':
+            inputHtml = `<textarea class="ep-in ep-ta dynamic-input" data-key="${key}">${value}</textarea>`;
+            break;
+        case 'select':
+            // Logic for options would go here
+            inputHtml = `<input type="text" class="ep-in dynamic-input" data-key="${key}" value="${value}">`;
+            break;
+        case 'image':
+            inputHtml = `
+                <div class="ep-img-prev" style="${value ? 'display:flex' : 'display:none'}">
+                    <img src="${value}" class="prev-img">
+                </div>
+                <div class="ep-row2">
+                    <input type="file" class="ep-in image-upload" data-key="${key}" accept="image/*" style="width:50%">
+                    <input type="text" class="ep-in dynamic-input" data-key="${key}" value="${value}" style="width:50%">
+                </div>`;
+            break;
+        default:
+            inputHtml = `<input type="text" class="ep-in dynamic-input" data-key="${key}" value="${value}">`;
+    }
+
+    return `<div class="ep-group" data-field-key="${key}"><div class="ep-title">${label}</div>${inputHtml}</div>`;
+}
+
+function updateValue(key, val) {
+    if (state.activeSectionIdx === null) return;
+    
+    const props = data[state.activeSectionIdx].props;
+    if (key.includes('.')) {
+        const parts = key.split('.');
+        let current = props;
+        for (let i = 0; i < parts.length - 1; i++) {
+            if (!current[parts[i]]) current[parts[i]] = {};
+            current = current[parts[i]];
+        }
+        current[parts[parts.length - 1]] = val;
+    } else {
+        props[key] = val;
+    }
+
+    markDirty();
+    postToFrame('apply-content', { index: state.activeSectionIdx, key, val });
+}
+
+function updateStyle(prop, val) {
+    if (state.activeSectionIdx === null) return;
+    if (!data[state.activeSectionIdx].props.styles) data[state.activeSectionIdx].props.styles = {};
+    data[state.activeSectionIdx].props.styles[prop] = val;
+    markDirty();
+    postToFrame('apply-style', { index: state.activeSectionIdx, prop, val });
+}
+
+async function uploadImage(file) {
+    const fd = new FormData();
+    fd.append('image', file);
+    return api(ROUTES.upload, fd);
+}
+
+// ============================================================
+// LAYERS & UI
+// ============================================================
+
+function updateLayersUI() {
+    const tree = document.getElementById('layerTree');
+    if (!tree) return;
+    
+    tree.innerHTML = data.map((s, i) => `
+        <div class="ep-layer-item ${state.activeSectionIdx === i ? 'active' : ''}" data-index="${i}">
+            <span class="ep-layer-drag">⠿</span>
+            <span class="ep-layer-label" onclick="selectLayer(${i})">${schemas[s.type]?.label || s.type}</span>
+            <span class="ep-layer-del" onclick="deleteSection(${i})">×</span>
+        </div>
+    `).join('');
+
+    new Sortable(tree, {
+        animation: 150, handle: '.ep-layer-drag',
+        onEnd: (e) => {
+            const item = data.splice(e.oldIndex, 1)[0];
+            data.splice(e.newIndex, 0, item);
+            state.activeSectionIdx = e.newIndex;
+            markDirty();
+            updateLayersUI();
+            postToFrame('reload-preview');
+        }
+    });
+}
+
+function selectLayer(idx) {
+    state.activeSectionIdx = idx;
+    const s = data[idx];
+    const schema = schemas[s.type] || {};
+    renderFields(schema, s.props);
+    updateLayersUI();
+    postToFrame('highlight-section', { index: idx });
+}
+
+function deleteSection(idx) {
+    if(confirm('Delete this section?')) {
+        data.splice(idx, 1);
+        state.activeSectionIdx = null;
+        markDirty();
+        updateLayersUI();
+        postToFrame('reload-preview');
+    }
+}
+
+function highlightField(key) {
+    setTimeout(() => {
+        const el = document.querySelector(`[data-field-key="${key}"]`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            el.classList.add('highlight-flash');
+            setTimeout(() => el.classList.remove('highlight-flash'), 1000);
+        }
+    }, 100);
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+
+document.getElementById('saveBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('saveBtn');
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+    try {
+        await api(ROUTES.save, { content: data });
+        markClean();
+    } catch (e) {
+        btn.textContent = 'Error';
+        setTimeout(() => { btn.textContent = 'Save'; btn.disabled = false; }, 2000);
+    } finally {
+        btn.disabled = false;
+    }
+});
+
+document.getElementById('publishBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('publishBtn');
+    btn.textContent = 'Publishing...';
+    await api(ROUTES.publish, {});
+    btn.textContent = '✓ Published';
+    setTimeout(() => btn.textContent = 'Publish →', 2500);
+});
+
+// Tab switching
+document.querySelectorAll('.ed-ptab').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.ed-ptab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.ed-pbody').forEach(p => p.style.display = 'none');
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).style.display = 'block';
+    });
+});
+
+function switchTab(tab) {
+    const btn = document.querySelector(`.ed-ptab[data-tab="${tab}"]`);
+    if (btn) btn.click();
+}
+
+function filterStyleControls(allowed) {
+    document.querySelectorAll('[data-style-group]').forEach(g => {
+        const name = g.dataset.styleGroup;
+        g.style.display = (!allowed || allowed.length === 0 || allowed.includes(name)) ? 'block' : 'none';
+    });
+    const form = document.getElementById('styleForm');
+    if (form) form.style.display = 'block';
+    const empty = document.getElementById('styleEmpty');
+    if (empty) empty.style.display = 'none';
+}
+
+// Bind style controls
+document.querySelectorAll('.sctrl').forEach(el => {
+    el.addEventListener('input', () => {
+        updateStyle(el.dataset.prop, el.value);
+    });
+});
+
+function debounce(func, wait) {
+    let timeout;
+    return function() {
+        const context = this, args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+}
+
+// Initialize
+updateLayersUI();

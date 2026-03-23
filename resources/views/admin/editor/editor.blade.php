@@ -13,44 +13,43 @@
     const CSRF = '{{ csrf_token() }}'
     const PAGE_SLUG = '{{ $pageSlug }}'
     const ROUTES = {
-      style:      '{{ route("admin.editor.style") }}',
-      content:    '{{ route("admin.editor.content") }}',
-      visibility: '{{ route("admin.editor.visibility") }}',
-      reorder:    '{{ route("admin.editor.reorder") }}',
+      save:       '{{ route("admin.editor.save", $pageSlug) }}',
       publish:    '{{ route("admin.editor.publish", $pageSlug) }}',
       upload:     '{{ route("admin.editor.upload-image") }}',
     }
     const SETTINGS = @json($globalSettings);
-    @php
-        $secArr = [];
-        foreach($sections as $s) {
-            $secArr[] = [
-                'id' => $s->id,
-                'key' => $s->section_key,
-                'label' => $s->section_label,
-                'visible' => $s->is_visible
-            ];
-        }
-    @endphp
-    const SECTIONS = {!! json_encode($secArr) !!};
+    const PAGE_CONTENT = @json($content);
+    const SCHEMAS = @json($schemas);
   </script>
 
   <div class="ed-shell">
 
     <!-- LEFT TOOLBAR -->
     <aside class="ed-bar">
-      <div class="ed-logo">AC</div>
+      <div class="ed-logo">AX</div>
       <div class="ed-tools">
-        <button class="ed-tool active" data-tool="select" title="Select">↖</button>
-        <button class="ed-tool" data-tool="text"   title="Text">T</button>
-        <button class="ed-tool" data-tool="image"  title="Image">🖼</button>
+        <button class="ed-tool active" data-tool="select" title="Select Tool">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="m13 13 6 6"/></svg>
+        </button>
+        <button class="ed-tool" data-tool="text" title="Text Tool">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+        </button>
+        <button class="ed-tool" data-tool="image" title="Media Tool">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+        </button>
       </div>
       <div class="ed-sep"></div>
       <div class="ed-tools">
-        <button class="ed-tool" id="undoBtn" title="Undo">↩</button>
-        <button class="ed-tool" id="previewBtn" title="Preview">👁</button>
+        <button class="ed-tool" id="undoBtn" title="Undo Action">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+        </button>
+        <button class="ed-tool" id="previewBtn" title="Live Preview">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
       </div>
-      <a href="{{ route('admin.dashboard') }}" class="ed-back" title="Admin">←</a>
+      <a href="{{ route('admin.dashboard') }}" class="ed-back" title="Back to Admin">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </a>
     </aside>
 
     <!-- CANVAS -->
@@ -102,7 +101,7 @@
         <div class="ed-empty" id="styleEmpty">↖ Click a section or element</div>
         <div id="styleForm" style="display:none">
 
-          <div class="ep-group">
+          <div class="ep-group" data-style-group="typography">
             <div class="ep-title">Typography</div>
             <div class="ep-row2">
               <div class="ep-field"><label>Size</label>
@@ -129,17 +128,17 @@
             </div>
           </div>
 
-          <div class="ep-group">
+          <div class="ep-group" data-style-group="color">
             <div class="ep-title">Color</div>
             <div class="ep-field"><label>Text</label>
               <div class="ep-color-row">
                 <input type="color" class="ep-color sctrl" data-prop="color" id="c-color">
-                <input type="text" class="ep-in" id="c-color-hex" placeholder="#ffffff">
+                <input type="text" class="ep-in sctrl" data-prop="color" id="c-color-hex" placeholder="#ffffff">
               </div></div>
             <div class="ep-field"><label>Background</label>
               <div class="ep-color-row">
                 <input type="color" class="ep-color sctrl" data-prop="backgroundColor" id="c-bg">
-                <input type="text" class="ep-in" id="c-bg-hex" placeholder="#0d1117">
+                <input type="text" class="ep-in sctrl" data-prop="backgroundColor" id="c-bg-hex" placeholder="#0d1117">
               </div></div>
             <div class="ep-swatches">
               <div class="ep-sw" style="background:#0d1117" data-c="#0d1117"></div>
@@ -153,30 +152,8 @@
             </div>
           </div>
 
-          <div class="ep-group">
-            <div class="ep-title">Spacing</div>
-            <div class="ep-bm">
-              <div class="ep-bm-outer">
-                <input class="ep-in ep-bm-val" type="text" data-prop="marginTop" placeholder="0">
-                <div class="ep-bm-mid">
-                  <input class="ep-in ep-bm-val" type="text" data-prop="marginLeft" placeholder="0">
-                  <div class="ep-bm-inner">
-                    <input class="ep-in ep-bm-val" type="text" data-prop="paddingTop" placeholder="60px">
-                    <div class="ep-bm-row">
-                      <input class="ep-in ep-bm-val" type="text" data-prop="paddingLeft" placeholder="52px">
-                      <span>Content</span>
-                      <input class="ep-in ep-bm-val" type="text" data-prop="paddingRight" placeholder="52px">
-                    </div>
-                    <input class="ep-in ep-bm-val" type="text" data-prop="paddingBottom" placeholder="60px">
-                  </div>
-                  <input class="ep-in ep-bm-val" type="text" data-prop="marginRight" placeholder="0">
-                </div>
-                <input class="ep-in ep-bm-val" type="text" data-prop="marginBottom" placeholder="0">
-              </div>
-            </div>
-          </div>
 
-          <div class="ep-group">
+          <div class="ep-group" data-style-group="size">
             <div class="ep-title">Size</div>
             <div class="ep-row2">
               <div class="ep-field"><label>Width</label>
@@ -184,9 +161,20 @@
               <div class="ep-field"><label>Min Height</label>
                 <input class="ep-in sctrl" type="text" data-prop="minHeight" placeholder="auto"></div>
             </div>
+            <div class="ep-row2">
+              <div class="ep-field"><label>Text Align</label>
+                <select class="ep-in sctrl" data-prop="textAlign" id="c-textAlign">
+                  <option value="inherit">Inherit</option>
+                  <option value="left">Left</option>
+                  <option value="center">Center</option>
+                  <option value="right">Right</option>
+                </select></div>
+              <div class="ep-field"><label>Radius</label>
+                <input class="ep-in sctrl" type="text" data-prop="borderRadius" id="c-borderRadius" placeholder="0px"></div>
+            </div>
           </div>
 
-          <div class="ep-group">
+          <div class="ep-group" data-style-group="visibility">
             <div class="ep-title">Visibility</div>
             <div class="ep-toggle-row">
               <span>Hide Section</span>
@@ -199,52 +187,54 @@
       </div>
 
       <div class="ed-pbody" id="tab-content" style="display:none">
-        <div class="ep-group">
-          <div class="ep-title">Text</div>
-          <textarea class="ep-in ep-ta" id="c-text" placeholder="Select a text element..."></textarea>
-          <div class="ep-row2">
-            <div class="ep-field"><label>Tag</label>
-              <select class="ep-in" id="c-tag">
-                <option>div</option><option>h1</option><option>h2</option><option>h3</option>
-                <option>p</option><option>span</option><option>a</option><option>button</option>
-              </select></div>
-            <div class="ep-field" id="hrefField" style="display:none"><label>Link</label>
-              <input class="ep-in" type="text" id="c-href" placeholder="/products"></div>
-          </div>
-          <button class="ep-apply" id="applyTextBtn">Apply Text</button>
+        <div id="dynamicContentForm">
+            <div class="ed-empty" id="contentEmpty">↖ Click a section or element</div>
+            <div id="fieldsContainer"></div>
         </div>
-        <div class="ep-group">
-          <div class="ep-title">Section Background</div>
-          <div class="ep-field"><label>Image Upload</label>
+
+        <div class="ep-group" id="sectionBgGroup" style="display:none; border-top: 1px solid var(--ed-border); margin-top: 20px; padding-top: 20px;">
+          <div class="ep-title">Section Appearance</div>
+          <div class="ep-field">
+            <div id="bgPreview" class="ep-img-prev" style="display:none">
+                <img src="" id="c-bgPrevImg">
+            </div>
+            <label>Background Image</label>
             <input type="file" class="ep-in" id="c-bgUpload" accept="image/*">
-            <input type="hidden" id="c-bgUrl" placeholder="https://...">
+            <input type="hidden" id="c-bgUrl">
             <div id="uploadStatus" style="font-size:9px;color:var(--ed-teal2);margin-top:4px"></div>
           </div>
           <div class="ep-field"><label>Overlay (0–1)</label>
             <input class="ep-in" type="range" id="c-bgOverlay" min="0" max="1" step="0.05" value="0.5">
             <span id="bgOverlayVal">0.5</span></div>
-          <button class="ep-apply" id="applyBgBtn">Apply Background</button>
-        </div>
-        <div class="ep-group" id="heroSlidesGroup" style="display:none">
-          <div class="ep-title">Hero Backgrounds</div>
-          @for($i=1; $i<=4; $i++)
-          <div class="ep-field" style="margin-top:6px; border-top:1px dashed var(--ed-border); padding-top:6px;">
-            <label style="color:var(--ed-teal);">Slide {{ $i }} Image Upload</label>
-            <input type="file" id="heroUpload{{ $i }}" class="ep-in" accept="image/*">
-            <input type="hidden" id="c-hero_bg_{{ $i }}">
-            <div id="heroStatus{{ $i }}" style="font-size:9px;color:var(--ed-teal);margin-top:4px"></div>
-          </div>
-          <div class="ep-field">
-            <label>Slide {{ $i }} Overlay</label>
-            <input class="ep-in" type="range" id="c-hero_bg_overlay_{{ $i }}" min="0" max="1" step="0.05" value="0.5">
-          </div>
-          @endfor
-          <button class="ep-apply" id="applyHeroSlidesBtn" style="margin-top:15px">Save Header Slides</button>
+          <button class="ep-apply" id="applyBgBtn">Apply Appearance</button>
         </div>
       </div>
 
+
       <div class="ed-pbody" id="tab-layout" style="display:none">
-        <div class="ep-group">
+        <div class="ep-group" data-style-group="spacing">
+            <div class="ep-title">Spacing</div>
+            <div class="ep-bm">
+              <div class="ep-bm-outer">
+                <input class="ep-in ep-bm-val sctrl" type="text" data-prop="marginTop" id="c-marginTop" placeholder="0">
+                <div class="ep-bm-mid">
+                  <input class="ep-in ep-bm-val sctrl" type="text" data-prop="marginLeft" id="c-marginLeft" placeholder="0">
+                  <div class="ep-bm-inner">
+                    <input class="ep-in ep-bm-val sctrl" type="text" data-prop="paddingTop" id="c-paddingTop" placeholder="60px">
+                    <div class="ep-bm-row">
+                      <input class="ep-in ep-bm-val sctrl" type="text" data-prop="paddingLeft" id="c-paddingLeft" placeholder="52px">
+                      <span>Content</span>
+                      <input class="ep-in ep-bm-val sctrl" type="text" data-prop="paddingRight" id="c-paddingRight" placeholder="52px">
+                    </div>
+                    <input class="ep-in ep-bm-val sctrl" type="text" data-prop="paddingBottom" id="c-paddingBottom" placeholder="60px">
+                  </div>
+                  <input class="ep-in ep-bm-val sctrl" type="text" data-prop="marginRight" id="c-marginRight" placeholder="0">
+                </div>
+                <input class="ep-in ep-bm-val sctrl" type="text" data-prop="marginBottom" id="c-marginBottom" placeholder="0">
+              </div>
+            </div>
+        </div>
+        <div class="ep-group" data-style-group="display">
           <div class="ep-title">Display</div>
           <div class="ep-field"><label>Type</label>
             <select class="ep-in sctrl" data-prop="display" id="c-display">
@@ -259,7 +249,7 @@
               <option>flex-start</option><option>center</option><option>flex-end</option><option>stretch</option>
             </select></div>
         </div>
-        <div class="ep-group">
+        <div class="ep-group" data-style-group="animation">
           <div class="ep-title">Animation</div>
           <div class="ep-field"><label>Type</label>
             <select class="ep-in" id="c-anim">
@@ -267,8 +257,10 @@
               <option value="sr">Fade Up</option>
               <option value="sr-l">Slide Left</option>
               <option value="sr-r">Slide Right</option>
-              <option value="sr-bounce">Spring Drop</option>
               <option value="sr-stagger">Stagger Children</option>
+              <option value="sr-scale">Scale Reveal</option>
+              <option value="sr-flip">Flip Reveal</option>
+              <option value="sr-bounce">Bounce drop</option>
             </select></div>
           <div class="ep-row2">
             <div class="ep-field"><label>Duration</label>

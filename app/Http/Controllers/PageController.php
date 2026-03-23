@@ -2,22 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Page;
+use App\Models\PageSection;
 
 class PageController extends Controller
 {
-    public function about()
+    public function show($slug)
     {
-        return view('about');
-    }
+        $page = Page::where('slug', $slug)->active()->firstOrFail();
+        
+        $data = [
+            'page' => $page,
+            'content' => $page->content ?? []
+        ];
 
-    public function industries()
-    {
-        return view('industries');
-    }
+        if ($slug === 'industries') {
+            $data['industries'] = \App\Models\Industry::active()->ordered()->get();
+        }
 
-    public function infrastructure()
-    {
-        return view('infrastructure');
+        // Render the page (or a generic builder view if no specific view exists)
+        if (view()->exists($slug)) {
+            return view($slug, $data);
+        }
+
+        return view('page', $data);
     }
 }

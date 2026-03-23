@@ -4,10 +4,26 @@
 
 @section('content')
 <!-- Page Header -->
-<div class="bg-gradient-to-r from-ink to-ink2 text-white py-16 px-4 md:px-8 border-b-4 border-teal">
-    <div class="max-w-[1400px] mx-auto text-center">
-        <h1 class="font-display font-extrabold text-[40px] leading-tight mb-2">Market <em class="font-serif italic text-teal-2 font-normal">Insights</em></h1>
-        <p class="font-serif italic text-[15px] text-white/60 max-w-xl mx-auto mb-4">Trade recommendations, price intelligence, and internal news from the desk of Auxinor Chemicals.</p>
+@foreach($sections as $index => $section)
+
+@php 
+    $type = $section['type'] ?? '';
+    $props = $section['props'] ?? [];
+@endphp
+
+@if($type === 'insights_hero' || $type === 'hero')
+<div 
+    data-section-index="{{ $index }}" 
+    data-section-type="{{ $type }}"
+    class="bg-gradient-to-r from-ink to-ink2 text-white py-16 px-4 md:px-8 border-b-4 border-teal relative overflow-hidden">
+    
+    <div class="max-w-[1400px] mx-auto text-center relative z-10">
+        <h1 data-element-key="title" class="font-display font-extrabold text-[40px] leading-tight mb-2">
+            {!! $props['title'] ?? ($props['heading'] ?? 'Market <em class="font-serif italic text-teal-2 font-normal">Insights</em>') !!}
+        </h1>
+        <p data-element-key="description" class="font-serif italic text-[15px] text-white/60 max-w-xl mx-auto mb-4">
+            {!! $props['description'] ?? ($props['subheading'] ?? 'Trade recommendations, price intelligence, and internal news from the desk of Auxinor Chemicals.') !!}
+        </p>
         <div class="font-mono text-[11px] text-white/50 space-x-2">
             <a href="{{ route('home') }}" class="hover:text-white transition-colors">Home</a>
             <span>/</span>
@@ -16,7 +32,12 @@
     </div>
 </div>
 
-<section class="py-20 px-4 md:px-8 bg-white" min-h-[60vh]>
+@elseif($type === 'insights_grid' || $type === 'blog_grid')
+<section 
+    data-section-index="{{ $index }}" 
+    data-section-type="{{ $type }}"
+    class="py-20 px-4 md:px-8 bg-white min-h-[60vh] relative overflow-hidden">
+    
     <div class="max-w-[1400px] mx-auto">
         
         @if($posts->count() > 0)
@@ -74,4 +95,10 @@
         
     </div>
 </section>
+@else
+    @php $type_hyphenated = str_replace('_', '-', $type); @endphp
+    <x-dynamic-component :component="'sections.' . $type_hyphenated" :data="$props" :index="$index" />
+@endif
+
+@endforeach
 @endsection

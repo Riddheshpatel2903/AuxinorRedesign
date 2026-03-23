@@ -17,8 +17,12 @@ class HeroSlideController extends Controller
     public function store(Request $r)
     {
         $data = $r->validate([
-            'image_url' => 'required|url',
-            'overlay_opacity' => 'numeric|between:0,1'
+            'image_url' => ['required', function($attr, $val, $fail) {
+                if (!filter_var($val, FILTER_VALIDATE_URL) && !str_starts_with($val, '/')) {
+                    $fail('Please provide a valid image URL or upload an image.');
+                }
+            }],
+            'overlay_opacity' => 'nullable|numeric|between:0,1'
         ]);
         HeroSlide::create($data + ['sort_order' => HeroSlide::max('sort_order') + 1]);
         return back()->with('success', 'Slide added.');
@@ -27,8 +31,12 @@ class HeroSlideController extends Controller
     public function update(Request $r, HeroSlide $slide)
     {
         $data = $r->validate([
-            'image_url' => 'required|url',
-            'overlay_opacity' => 'numeric|between:0,1',
+            'image_url' => ['required', function($attr, $val, $fail) {
+                if (!filter_var($val, FILTER_VALIDATE_URL) && !str_starts_with($val, '/')) {
+                    $fail('Please provide a valid image URL or upload an image.');
+                }
+            }],
+            'overlay_opacity' => 'nullable|numeric|between:0,1',
             'is_active' => 'boolean'
         ]);
         $slide->update($data);

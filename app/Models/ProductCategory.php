@@ -17,10 +17,12 @@ class ProductCategory extends Model
         'image',
         'sort_order',
         'is_active',
+        'styles',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'styles' => 'array',
     ];
 
     public function products()
@@ -36,5 +38,13 @@ class ProductCategory extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('sort_order');
+    }
+
+    public function getStyleString(string $field = 'card'): string
+    {
+        if (empty($this->styles) || empty($this->styles[$field])) return '';
+        return collect($this->styles[$field])
+            ->map(fn($v, $k) => strtolower(preg_replace('/([A-Z])/', '-$1', $k)) . ':' . $v)
+            ->implode(';');
     }
 }

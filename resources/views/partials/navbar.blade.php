@@ -1,14 +1,21 @@
-<nav id="navbar" class="bg-white border-b border-line sticky top-0 z-[200] transition-shadow duration-300" style="height: 74px;" x-data="{ mobileMenuOpen: false, productsOpen: false }" @scroll.window="$el.classList.toggle('shadow-md', window.scrollY > 60)">
+<nav id="navbar" 
+     @if(isset($navbarSection))
+        data-section-id="{{ $navbarSection->id }}" 
+        data-section-key="navbar" 
+        data-section-label="Global Navbar"
+        style="{{ $navbarSection->getStyleString() }}"
+     @endif
+     class="bg-white border-b border-line sticky top-0 z-[200] transition-shadow duration-300" style="height: 74px;" x-data="{ mobileMenuOpen: false, productsOpen: false }" @scroll.window="$el.classList.toggle('shadow-md', window.scrollY > 60)">
     <div class="max-w-[1400px] mx-auto px-4 md:px-8 h-full flex justify-between items-center">
         <!-- Logo -->
         <a href="{{ route('home') }}" class="flex items-center space-x-3 group">
             <div class="w-[44px] h-[44px] bg-ink flex flex-col justify-end overflow-hidden relative">
-                <div class="absolute inset-0 flex items-center justify-center font-mono text-teal-2 text-lg pt-1 group-hover:scale-110 transition-transform">AC</div>
+                <div data-element-id="navbar_logo_text" data-element-type="text" class="absolute inset-0 flex items-center justify-center font-mono text-teal-2 text-lg pt-1 group-hover:scale-110 transition-transform">AC</div>
                 <div class="h-[3px] bg-teal-2 w-full mt-auto"></div>
             </div>
             <div class="flex flex-col">
-                <span class="font-display font-bold text-sm leading-tight text-ink uppercase tracking-wider">AUXINOR</span>
-                <span class="font-mono text-[10px] text-muted">Chemicals LLP</span>
+                <span data-element-id="navbar_brand_name" data-element-type="text" class="font-display font-bold text-sm leading-tight text-ink uppercase tracking-wider">AUXINOR</span>
+                <span data-element-id="navbar_brand_suffix" data-element-type="text" class="font-mono text-[10px] text-muted">Chemicals LLP</span>
             </div>
         </a>
 
@@ -54,7 +61,24 @@
                      style="display: none;">
                      <a href="{{ route('products.index') }}" class="block px-4 py-2 text-xs font-display uppercase tracking-wider hover:bg-bg hover:text-teal border-b border-line mb-1">All Products</a>
                      @foreach($globalCategories ?? [] as $category)
-                        <a href="{{ route('products.category', $category->slug) }}" class="block px-4 py-2 text-xs font-display uppercase tracking-wider hover:bg-bg hover:text-teal">{{ $category->icon }} {{ $category->name }}</a>
+                        @php
+                            if (is_object($category)) {
+                                $slug = $category->slug ?? '';
+                                $name = $category->name ?? $category->slug ?? '';
+                                $icon = $category->icon ?? '';
+                            } elseif (is_array($category)) {
+                                $slug = $category['slug'] ?? '';
+                                $name = $category['name'] ?? $category['slug'] ?? '';
+                                $icon = $category['icon'] ?? '';
+                            } else {
+                                $slug = (string) $category;
+                                $name = (string) $category;
+                                $icon = '';
+                            }
+                        @endphp
+                        @if($slug)
+                          <a href="{{ route('products.category', $slug) }}" class="block px-4 py-2 text-xs font-display uppercase tracking-wider hover:bg-bg hover:text-teal">{{ $icon }} {{ $name }}</a>
+                        @endif
                      @endforeach
                 </div>
             </div>
@@ -82,7 +106,10 @@
 
         <!-- CTA -->
         <div class="hidden lg:block">
-            <a href="{{ route('contact') }}#enquiry-form" class="btn-primary nav-quote px-6 py-3 font-display text-[11px] font-bold uppercase tracking-[1.5px]">Get a Quote</a>
+            <a href="{{ route('contact') }}#enquiry-form" 
+               data-element-id="navbar_cta" 
+               data-element-type="button" 
+               class="btn-primary nav-quote px-6 py-3 font-display text-[11px] font-bold uppercase tracking-[1.5px]">Get a Quote</a>
         </div>
         
         <!-- Mobile Menu Button -->

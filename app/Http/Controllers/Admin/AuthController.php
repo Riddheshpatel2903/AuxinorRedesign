@@ -10,8 +10,12 @@ class AuthController extends Controller
 {
     public function form()
     {
-        if (Auth::check()) {
+        if (Auth::check() && Auth::user()->is_admin) {
             return redirect()->route('admin.dashboard');
+        }
+        if (Auth::check() && !Auth::user()->is_admin) {
+            Auth::logout();
+            return view('admin.login')->with('error', 'You do not have administration access.');
         }
         return view('admin.login');
     }
@@ -24,6 +28,10 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
+            if (!Auth::user()->is_admin) {
+                Auth::logout();
+                return back()->withErrors(['email' => 'This account does not have administration privileges.'])->onlyInput('email');
+            }
             $request->session()->regenerate();
             return redirect()->intended('admin');
         }

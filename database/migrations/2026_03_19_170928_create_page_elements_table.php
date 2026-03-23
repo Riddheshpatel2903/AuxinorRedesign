@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('section_id')->constrained('page_sections')->cascadeOnDelete();
             $table->string('element_key');
-            $table->enum('element_type', ['text', 'heading', 'button', 'image', 'stat']);
+            $table->enum('element_type', ['text', 'heading', 'button', 'link', 'image', 'stat']);
             $table->text('content')->nullable();
             $table->string('href')->nullable();
             $table->string('image_url')->nullable();

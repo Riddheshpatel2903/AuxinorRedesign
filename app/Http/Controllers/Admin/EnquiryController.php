@@ -38,8 +38,9 @@ class EnquiryController extends Controller
         return back()->with('success', 'Enquiry updated successfully.');
     }
 
-    public function status(Request $request, $id) // specific method for quick status toggle if needed
+    public function status(Request $request, $id)
     {
+        $request->validate(['status' => 'required|in:new,contacted,read,replied,closed']);
         $enquiry = Enquiry::findOrFail($id);
         $enquiry->update(['status' => $request->status]);
         return back()->with('success', 'Status updated.');

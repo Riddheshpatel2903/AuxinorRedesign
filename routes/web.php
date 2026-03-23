@@ -14,32 +14,40 @@ use App\Http\Controllers\Admin\EnquiryController as AdminEnquiryController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\PageEditorController;
+use App\Http\Controllers\Admin\AdminPageController;
+use App\Http\Controllers\Admin\SectionController;
+use App\Http\Controllers\Admin\SectionContentController;
+use App\Http\Controllers\Admin\SectionStyleController;
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/about', [PageController::class, 'about'])->name('about');
+Route::get('/about', [PageController::class, 'show'])->defaults('slug', 'about')->name('about');
+Route::get('/industries', [PageController::class, 'show'])->defaults('slug', 'industries')->name('industries');
+Route::get('/infrastructure', [PageController::class, 'show'])->defaults('slug', 'infrastructure')->name('infrastructure');
+Route::get('/contact', [PageController::class, 'show'])->defaults('slug', 'contact')->name('contact');
+
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{category}', [ProductController::class, 'byCategory'])->name('products.category');
 Route::get('/products/{category}/{slug}', [ProductController::class, 'show'])->name('products.show');
-Route::get('/industries', [PageController::class, 'industries'])->name('industries');
-Route::get('/infrastructure', [PageController::class, 'infrastructure'])->name('infrastructure');
+
 Route::get('/insights', [BlogController::class, 'index'])->name('insights.index');
 Route::get('/insights/{slug}', [BlogController::class, 'show'])->name('insights.show');
-Route::get('/contact', [ContactController::class, 'index'])->name('contact');
-Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
+Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit')->middleware('throttle:5,1');
 Route::post('/enquiry', [EnquiryController::class, 'submit'])->name('enquiry.submit');
 
 // Admin Auth Routes
-Route::get('/admin/login', [AdminAuthController::class, 'form'])->name('login');
+Route::get('/admin/login', [AdminAuthController::class, 'form'])->name('admin.login');
 Route::post('/admin/login', [AdminAuthController::class, 'submit'])->name('admin.login.submit');
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
 // Admin Routes
-Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     Route::resource('products', AdminProductController::class);
     Route::resource('categories', AdminCategoryController::class);
+    Route::resource('industries', \App\Http\Controllers\Admin\IndustryController::class);
     
     Route::resource('enquiries', AdminEnquiryController::class)->only(['index', 'show', 'update', 'destroy']);
     Route::patch('enquiries/{id}/status', [AdminEnquiryController::class, 'status'])->name('enquiries.status');
@@ -56,14 +64,16 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('settings', [AdminSettingController::class, 'index'])->name('settings');
     Route::post('settings', [AdminSettingController::class, 'update'])->name('settings.update');
 
-    Route::prefix('editor')->name('editor.')->group(function() {
-        Route::get('/',          [\App\Http\Controllers\Admin\PageEditorController::class,'index'])           ->name('index');
-        Route::get('/{slug}',    [\App\Http\Controllers\Admin\PageEditorController::class,'page'])            ->name('page');
-        Route::post('/style',    [\App\Http\Controllers\Admin\PageEditorController::class,'updateStyle'])     ->name('style');
-        Route::post('/content',  [\App\Http\Controllers\Admin\PageEditorController::class,'updateContent'])   ->name('content');
-        Route::post('/visibility',[\App\Http\Controllers\Admin\PageEditorController::class,'toggleVisibility'])->name('visibility');
-        Route::post('/reorder',  [\App\Http\Controllers\Admin\PageEditorController::class,'reorder'])         ->name('reorder');
-        Route::post('/publish/{slug}', [\App\Http\Controllers\Admin\PageEditorController::class,'publish'])   ->name('publish');
-        Route::post('/upload-image', [\App\Http\Controllers\Admin\PageEditorController::class,'uploadImage']) ->name('upload-image');
+    // CMS Visual Editor (PHASE 5) - UI and Generic Actions
+    Route::name('editor.')->prefix('editor')->group(function () {
+        Route::get('/',           [PageEditorController::class, 'index'])->name('index');
+        Route::get('/{slug}',     [PageEditorController::class, 'page'])->name('page');
+        Route::get('/{slug}/preview', [PageEditorController::class, 'preview'])->name('preview');
+        Route::post('/{slug}/save',    [PageEditorController::class, 'save'])->name('save');
+        Route::post('/publish/{slug}', [PageEditorController::class, 'publish'])->name('publish');
+        Route::post('/upload-image',   [PageEditorController::class, 'uploadImage'])->name('upload-image');
     });
+
+    // CMS Page Management (PHASE 5)
+    Route::resource('pages', AdminPageController::class);
 });
