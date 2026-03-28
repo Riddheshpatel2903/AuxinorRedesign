@@ -18,7 +18,7 @@ function getStyles(el) {
     'paddingTop','paddingBottom','paddingLeft','paddingRight',
     'marginTop','marginBottom','width','height','minHeight',
     'display','alignItems','justifyContent','gridTemplateColumns',
-    'gap','letterSpacing','lineHeight'].reduce((o,p) => ({...o,[p]:cs[p]}),{})
+    'gap','letterSpacing','lineHeight','borderRadius','boxShadow'].reduce((o,p) => ({...o,[p]:cs[p]}),{})
 }
 
 // Make sections selectable
@@ -92,10 +92,13 @@ document.querySelectorAll('[data-element-id]').forEach(el => {
   el.addEventListener('click', e => {
     e.stopPropagation()
     e.preventDefault()
+    const sec = el.closest('[data-section-id]');
     emit('element-click', {
+      sectionId: sec?.dataset.sectionId,
       id: el.dataset.elementId, key: el.dataset.elementKey,
       type: el.dataset.elementType || 'text',
       content: el.innerText, tag: el.tagName.toLowerCase(),
+      src: el.src || '',
       href: el.href || el.getAttribute('href') || '', styles: getStyles(el)
     })
   })
@@ -120,7 +123,14 @@ window.addEventListener('message', e => {
 
   if (action === 'apply-content') {
     const el = document.querySelector('[data-element-id="'+payload.elementId+'"]')
-    if (el) { el.innerHTML = payload.content; if (payload.href) el.href = payload.href }
+    if (el) {
+      if (payload.src && el.tagName.toLowerCase() === 'img') {
+        el.src = payload.src;
+      } else {
+        el.innerHTML = payload.content;
+        if (payload.href) el.href = payload.href;
+      }
+    }
   }
 
   if (action === 'apply-bg') {
@@ -163,9 +173,25 @@ window.addEventListener('message', e => {
     ['sr','sr-l','sr-r','sr-up','sr-bounce','sr-stagger'].forEach(c =>
       sec.classList.remove(c))
     if (payload.animClass) {
+      sec.style.visibility = 'visible';
+      sec.style.opacity = '1';
       sec.classList.remove('animated')
       sec.classList.add(payload.animClass)
-      setTimeout(() => sec.classList.add('animated'), 100)
+      setTimeout(() => sec.classList.add('animated'), 10)
     }
+  }
+
+  if (action === 'reorder-sections') {
+    const firstSec = document.querySelector('[data-section-id]');
+    if (!firstSec) return;
+    const parent = firstSec.parentElement;
+    const fragment = document.createDocumentFragment();
+    payload.order.forEach(id => {
+      const sec = document.querySelector('[data-section-id="'+id+'"]');
+      if (sec) fragment.appendChild(sec);
+    });
+    parent.appendChild(fragment);
+    // Refresh ScrollReveal if active
+    if (window.sr) window.sr.reveal('.sr-up, .sr-l, .sr-r, .sr-bounce', { interval: 100 });
   }
 })

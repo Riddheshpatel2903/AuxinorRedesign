@@ -184,6 +184,12 @@
               <div class="ep-field"><label>Min Height</label>
                 <input class="ep-in sctrl" type="text" data-prop="minHeight" placeholder="auto"></div>
             </div>
+            <div class="ep-row2">
+              <div class="ep-field"><label>Border Radius</label>
+                <input class="ep-in sctrl" type="text" data-prop="borderRadius" placeholder="0px"></div>
+              <div class="ep-field"><label>Box Shadow</label>
+                <input class="ep-in sctrl" type="text" data-prop="boxShadow" placeholder="none"></div>
+            </div>
           </div>
 
           <div class="ep-group">
@@ -212,6 +218,14 @@
               <input class="ep-in" type="text" id="c-href" placeholder="/products"></div>
           </div>
           <button class="ep-apply" id="applyTextBtn">Apply Text</button>
+        </div>
+        <div class="ep-group" id="imageGroup" style="display:none">
+          <div class="ep-title">Change Image</div>
+          <div class="ep-field">
+            <label>Upload New Image</label>
+            <input type="file" class="ep-in" id="c-imageUpload" accept="image/*">
+            <div id="imageUploadStatus" style="font-size:9px;color:var(--ed-teal2);margin-top:4px"></div>
+          </div>
         </div>
         <div class="ep-group">
           <div class="ep-title">Section Background</div>
@@ -291,6 +305,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  <script src="{{ asset('js/editor.js') }}"></script>
+  <script src="{{ asset('js/editor.js') }}?v={{ time() }}"></script>
   </body>
   </html>

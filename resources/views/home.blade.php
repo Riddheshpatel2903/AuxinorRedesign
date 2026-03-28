@@ -2,7 +2,7 @@
 
 @section('content')
 <!-- HERO SECTION -->
-<section data-section-id="1" data-section-key="hero" data-section-label="Hero Section" class="min-h-[88vh] border-b border-line relative overflow-hidden @auth cms-editable @endauth" data-cms-label="Edit Hero Layout & Images"
+<section data-section-id="{{ $sections->where('section_key', 'home_hero')->first()->id ?? '113' }}" data-section-key="home_hero" data-section-label="Hero Banner" class="min-h-[88vh] border-b border-line relative overflow-hidden @auth cms-editable @endauth" data-cms-label="Edit Hero Section"
          x-data="{ 
             images: [
                 @if(!empty($globalSettings['hero_bg_1'])) { url: '{{ $globalSettings['hero_bg_1'] }}', overlay: {{ $globalSettings['hero_bg_overlay_1'] ?? '0.5' }} }, @endif
@@ -101,7 +101,7 @@
 </section>
 
 <!-- SERVICES STRIP -->
-<section data-section-id="2" data-section-key="services_strip" data-section-label="Services Strip" class="bg-ink grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 p-4 lg:p-8 gap-4 sr-up relative z-10">
+<section data-section-id="{{ $sections->where('section_key', 'services_strip')->first()->id ?? '120' }}" data-section-key="services_strip" data-section-label="Services Strip" class="bg-ink grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 p-4 lg:p-8 gap-4 sr-up relative z-10">
     <!-- Card 1: Trading -->
     <a href="#" class="relative h-[350px] lg:h-[450px] bg-ink2 overflow-hidden group rounded-sm block hover:-translate-y-2 transition-transform duration-500">
         <img src="{{ asset('assets/images/service-trading.jpg') }}" class="absolute inset-0 w-full h-full object-cover filter brightness-75 group-hover:scale-105 group-hover:brightness-100 transition-all duration-700" alt="Chemical Trading Data">
@@ -153,7 +153,7 @@
 </section>
 
 <!-- INDUSTRIES SECTION -->
-<section data-section-id="3" data-section-key="industries" data-section-label="Industries" class="bg-white py-[100px] px-4 md:px-8 max-w-[1400px] mx-auto">
+<section data-section-id="{{ $sections->where('section_key', 'home_industries')->first()->id ?? '114' }}" data-section-key="home_industries" data-section-label="Industries Preview" class="bg-white py-[100px] px-4 md:px-8 max-w-[1400px] mx-auto @auth cms-editable @endauth" data-cms-label="Edit Industries Section">
     <div class="mb-16">
         <span class="font-mono text-[10px] uppercase tracking-widest text-teal block mb-4">Industries Served</span>
         <h2 class="font-display font-extrabold text-[48px] leading-tight">Where We <em class="font-serif italic text-teal font-normal">Deliver</em></h2>
@@ -161,25 +161,31 @@
     
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sr-stagger">
         @php
-            // Sample industry-related images for the background
+            $industries = [
+                (object)['name' => 'Pharmaceuticals', 'icon' => '🧪', 'desc' => 'High-purity solvents and lab chemicals for API manufacturing.'],
+                (object)['name' => 'Agrochemicals', 'icon' => '🌱', 'desc' => 'Bulk intermediates and fertilizers for large-scale agriculture.'],
+                (object)['name' => 'Paints & Coatings', 'icon' => '🎨', 'desc' => 'Resins, pigments, and thinning agents for industrial finishes.'],
+                (object)['name' => 'Manufacturing', 'icon' => '🏭', 'desc' => 'General industrial chemicals for processing and maintenance.'],
+                (object)['name' => 'Cosmetics', 'icon' => '💄', 'desc' => 'Specialized raw materials for personal care and hygiene products.'],
+                (object)['name' => 'Construction', 'icon' => '🏗️', 'desc' => 'Additives and bonding agents for modern cement and mortar.']
+            ];
+
             $industryImages = [
-                asset('assets/images/industry-1.jpg'), // Pharma/Lab
-                asset('assets/images/industry-2.jpg'), // Manufacturing
-                asset('assets/images/industry-3.jpg'), // Agrochemicals
-                asset('assets/images/industry-4.jpg'), // Default Industrial
-                asset('assets/images/industry-5.jpg'), // Construction/Paint
-                asset('assets/images/industry-6.jpg')  // Cosmetics/Food
+                asset('assets/images/industry-1.jpg'),
+                asset('assets/images/industry-2.jpg'),
+                asset('assets/images/industry-3.jpg'),
+                asset('assets/images/industry-4.jpg'),
+                asset('assets/images/industry-5.jpg'),
+                asset('assets/images/industry-6.jpg')
             ];
         @endphp
         @foreach($industries as $idx => $industry)
         <a href="{{ route('industries') }}" class="group relative rounded-sm h-[320px] overflow-hidden flex flex-col industry-card block">
-            <!-- Background Image -->
-            <img src="{{ $industryImages[$idx % count($industryImages)] }}" class="absolute inset-0 w-full h-full object-cover filter grayscale-[40%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out" alt="{{ $industry->name }}">
+             <!-- Background Image -->
+            <img src="{{ $industryImages[$idx % count($industryImages)] }}" class="absolute inset-0 w-full h-full object-cover filter grayscale-[40%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out" alt="{{ $industry->name }}" onerror="this.src='{{ asset('assets/images/hero-1.jpg') }}'">
             
             <!-- Default Dark Gradient Overlay -->
             <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-ink/20 opacity-90 group-hover:opacity-70 transition-opacity duration-500 z-0"></div>
-            <!-- Extra Hover Overlay for color pop -->
-            <div class="absolute inset-0 bg-teal/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0 mix-blend-multiply"></div>
             
             <div class="relative z-10 p-8 flex flex-col h-full justify-between">
                 <div class="flex justify-between items-start">
@@ -198,7 +204,7 @@
 </section>
 
 <!-- PRODUCTS SECTION -->
-<section data-section-id="4" data-section-key="products" data-section-label="Products" class="bg-bg py-[100px] px-4 md:px-8 border-y border-line">
+<section data-section-id="{{ $sections->where('section_key', 'home_products')->first()->id ?? '117' }}" data-section-key="home_products" data-section-label="Featured Products" class="bg-bg py-[100px] px-4 md:px-8 border-y border-line @auth cms-editable @endauth" data-cms-label="Edit Products Preview">
     <div class="max-w-[1400px] mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-end mb-16">
             <div>
@@ -251,7 +257,7 @@
 </section>
 
 <!-- ABOUT / INFRASTRUCTURE SECTION -->
-<section data-section-id="5" data-section-key="about_infra" data-section-label="About & Infrastructure" class="bg-ink py-[110px] px-4 md:px-8 border-b-4 border-teal overflow-hidden relative @auth cms-editable @endauth" data-cms-label="Edit About & Infrastructure Content">
+<section data-section-id="{{ $sections->where('section_key', 'home_about')->first()->id ?? '116' }}" data-section-key="home_about" data-section-label="About Preview" class="bg-ink py-[110px] px-4 md:px-8 border-b-4 border-teal overflow-hidden relative @auth cms-editable @endauth" data-cms-label="Edit About section">
     @if(($globalSettings['show_about_image'] ?? '1') == '1' && !empty($globalSettings['about_image_url']))
         <img src="{{ $globalSettings['about_image_url'] }}" class="absolute left-0 top-0 w-1/2 h-full object-cover opacity-[0.08] filter grayscale pointer-events-none" style="mask-image: linear-gradient(to right, black, transparent);">
     @endif
@@ -318,7 +324,7 @@
 </section>
 
 <!-- MARKET INSIGHTS -->
-<section data-section-id="6" data-section-key="insights" data-section-label="Market Insights" class="bg-white py-[100px] px-4 md:px-8">
+<section data-section-id="{{ $sections->where('section_key', 'home_insights')->first()->id ?? '118' }}" data-section-key="home_insights" data-section-label="Latest Insights" class="bg-white py-[100px] px-4 md:px-8 @auth cms-editable @endauth" data-cms-label="Edit Insights Preview">
     <div class="max-w-[1400px] mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-end mb-16">
             <div>
@@ -348,7 +354,7 @@
 </section>
 
 <!-- CONTACT SECTION -->
-<section data-section-id="7" data-section-key="contact" data-section-label="Contact & Enquiry" class="bg-bg py-[100px] px-4 md:px-8 border-t border-line @auth cms-editable @endauth" data-cms-label="Edit Contact Details">
+<section data-section-id="{{ $sections->where('section_key', 'home_contact')->first()->id ?? '119' }}" data-section-key="home_contact" data-section-label="Home CTA" class="bg-bg py-[100px] px-4 md:px-8 border-t border-line @auth cms-editable @endauth" data-cms-label="Edit Home CTA">
     <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
         <div class="relative bg-ink rounded-sm overflow-hidden p-8 lg:p-12 text-white">
             <img src="{{ asset('assets/images/contact-bg.jpg') }}" alt="Contact Us" class="absolute inset-0 w-full h-full object-cover opacity-[0.15] filter grayscale blur-sm">

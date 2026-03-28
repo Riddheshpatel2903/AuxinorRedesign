@@ -17,12 +17,13 @@ use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/about', [PageController::class, 'about'])->name('about');
+Route::get('/about', [PageController::class, 'show'])->defaults('slug', 'about')->name('about');
+Route::get('/industries', [PageController::class, 'show'])->defaults('slug', 'industries')->name('industries');
+Route::get('/infrastructure', [PageController::class, 'show'])->defaults('slug', 'infrastructure')->name('infrastructure');
+
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{category}', [ProductController::class, 'byCategory'])->name('products.category');
 Route::get('/products/{category}/{slug}', [ProductController::class, 'show'])->name('products.show');
-Route::get('/industries', [PageController::class, 'industries'])->name('industries');
-Route::get('/infrastructure', [PageController::class, 'infrastructure'])->name('infrastructure');
 Route::get('/insights', [BlogController::class, 'index'])->name('insights.index');
 Route::get('/insights/{slug}', [BlogController::class, 'show'])->name('insights.show');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
@@ -56,7 +57,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('settings', [AdminSettingController::class, 'index'])->name('settings');
     Route::post('settings', [AdminSettingController::class, 'update'])->name('settings.update');
 
-    Route::prefix('editor')->name('editor.')->group(function() {
+    Route::name('editor.')->prefix('editor')->group(function() {
         Route::get('/',          [\App\Http\Controllers\Admin\PageEditorController::class,'index'])           ->name('index');
         Route::get('/{slug}',    [\App\Http\Controllers\Admin\PageEditorController::class,'page'])            ->name('page');
         Route::post('/style',    [\App\Http\Controllers\Admin\PageEditorController::class,'updateStyle'])     ->name('style');
@@ -66,4 +67,24 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/publish/{slug}', [\App\Http\Controllers\Admin\PageEditorController::class,'publish'])   ->name('publish');
         Route::post('/upload-image', [\App\Http\Controllers\Admin\PageEditorController::class,'uploadImage']) ->name('upload-image');
     });
+
+    // ============================================================
+    // GRAPESJS VISUAL EDITOR ROUTES — Admin only
+    // ============================================================
+    Route::middleware('admin')->prefix('grapesjs')->name('grapesjs.')->group(function () {
+        Route::get('/',                                            [\App\Http\Controllers\Admin\GrapesEditorController::class, 'index'])->name('index');
+        Route::get('/editor/{slug}',                                [\App\Http\Controllers\Admin\GrapesEditorController::class, 'show'])->name('editor.show');
+        Route::get('/editor/{slug}/load',                           [\App\Http\Controllers\Admin\GrapesEditorController::class, 'load'])->name('editor.load');
+        Route::post('/editor/{slug}/save',                          [\App\Http\Controllers\Admin\GrapesEditorController::class, 'save'])->name('editor.save');
+        Route::post('/upload/image',                                [\App\Http\Controllers\Admin\GrapesEditorController::class, 'uploadImage'])->name('upload.image');
+        Route::get('/upload/images',                                [\App\Http\Controllers\Admin\GrapesEditorController::class, 'listImages'])->name('upload.images');
+        Route::post('/editor/{slug}/publish',                       [\App\Http\Controllers\Admin\GrapesEditorController::class, 'togglePublish'])->name('editor.publish');
+        Route::post('/editor/{slug}/versions/{versionId}/restore',  [\App\Http\Controllers\Admin\GrapesEditorController::class, 'restoreVersion'])->name('editor.restore');
+    });
 });
+
+// Dynamic public pages driven by visual editor
+Route::get('/{slug}', [App\Http\Controllers\PageController::class, 'show'])
+    ->where('slug', '^(?!admin|login|register|password|products|insights)[a-z0-9-]+$');
+
+

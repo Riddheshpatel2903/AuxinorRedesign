@@ -4,7 +4,7 @@
 
 @section('content')
 <!-- Hero -->
-<section class="bg-gradient-to-r from-ink to-ink2 text-white py-16 px-4 md:px-8 border-b border-line/20">
+<section data-section-id="{{ $sections->where('section_key', 'contact_hero')->first()->id ?? '103' }}" data-section-key="contact_hero" data-section-label="Contact Hero" class="bg-gradient-to-r from-ink to-ink2 text-white py-16 px-4 md:px-8 border-b border-line/20 @auth cms-editable @endauth" data-cms-label="Edit Contact Hero">
     <div class="max-w-[1400px] mx-auto text-center">
         <h1 class="font-display font-extrabold text-[40px] leading-tight mb-2">Contact <em class="font-serif italic text-teal-2 font-normal">Us</em></h1>
         <div class="font-mono text-[11px] text-white/50 space-x-2">
@@ -15,7 +15,7 @@
     </div>
 </section>
 
-<section class="bg-bg py-[80px] px-4 md:px-8 border-b border-line relative overflow-hidden">
+<section data-section-id="{{ $sections->where('section_key', 'contact_form_sec')->first()->id ?? '104' }}" data-section-key="contact_form_sec" data-section-label="Contact Info & Form" class="bg-bg py-[80px] px-4 md:px-8 border-b border-line relative overflow-hidden @auth cms-editable @endauth" data-cms-label="Edit Contact Info">
     <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 relative z-10">
         <!-- Contact Details -->
         <div class="sr-l">
@@ -51,16 +51,16 @@
                         <div class="w-10 h-10 border border-teal/20 bg-teal-light flex items-center justify-center text-teal flex-shrink-0">📞</div>
                         <div>
                             <span class="block font-display font-bold text-xs uppercase tracking-wider mb-2 text-ink">Call Us</span>
-                            <a href="tel:{{ $globalSettings['phone_primary'] }}" class="font-mono text-[12px] text-muted hover:text-teal block mb-1">{{ $globalSettings['phone_primary'] ?? '+91' }}</a>
-                            <a href="tel:{{ $globalSettings['phone_secondary'] }}" class="font-mono text-[12px] text-muted hover:text-teal block">{{ $globalSettings['phone_secondary'] ?? '' }}</a>
+                            <a href="tel:{{ $globalSettings['phone_primary'] ?? '' }}" class="font-mono text-[12px] text-muted hover:text-teal block mb-1">{{ $globalSettings['phone_primary'] ?? '+91' }}</a>
+                            <a href="tel:{{ $globalSettings['phone_secondary'] ?? '' }}" class="font-mono text-[12px] text-muted hover:text-teal block">{{ $globalSettings['phone_secondary'] ?? '' }}</a>
                         </div>
                     </div>
                     <div class="flex items-start space-x-4">
                         <div class="w-10 h-10 border border-teal/20 bg-teal-light flex items-center justify-center text-teal flex-shrink-0">✉️</div>
                         <div>
                             <span class="block font-display font-bold text-xs uppercase tracking-wider mb-2 text-ink">Email</span>
-                            <a href="mailto:{{ $globalSettings['email_sales'] }}" class="font-mono text-[12px] text-muted hover:text-teal block mb-1">{{ $globalSettings['email_sales'] ?? 'sales@auxinorchem.com' }}</a>
-                            <a href="mailto:{{ $globalSettings['email_info'] }}" class="font-mono text-[12px] text-muted hover:text-teal block">{{ $globalSettings['email_info'] ?? 'info@auxinorchem.com' }}</a>
+                            <a href="mailto:{{ $globalSettings['email_sales'] ?? '' }}" class="font-mono text-[12px] text-muted hover:text-teal block mb-1">{{ $globalSettings['email_sales'] ?? 'sales@auxinorchem.com' }}</a>
+                            <a href="mailto:{{ $globalSettings['email_info'] ?? '' }}" class="font-mono text-[12px] text-muted hover:text-teal block">{{ $globalSettings['email_info'] ?? 'info@auxinorchem.com' }}</a>
                         </div>
                     </div>
                 </div>

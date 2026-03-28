@@ -9,7 +9,8 @@ class ContactController extends Controller
 {
     public function index()
     {
-        return view('contact');
+        $sections = \App\Models\PageSection::forPage('contact')->get();
+        return view('contact', compact('sections'));
     }
 
     public function submit(Request $request)
