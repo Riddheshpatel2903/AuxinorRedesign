@@ -20,6 +20,7 @@ class Product extends Model
         'applications',
         'specifications',
         'image',
+        'gallery',
         'is_active',
         'is_featured',
         'sort_order'
@@ -27,6 +28,7 @@ class Product extends Model
 
     protected $casts = [
         'specifications' => 'array',
+        'gallery' => 'array',
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
     ];

@@ -1,197 +1,336 @@
-document.body.classList.add('editor-mode')
+/**
+ * Auxinor Editor Receiver (Refactored)
+ * Light-weight Renderer for the Iframe.
+ */
+
+document.body.classList.add('editor-mode');
 
 function emit(action, payload) {
-  window.parent.postMessage({ src: 'auxinor-site', action, payload }, '*')
+    window.parent.postMessage({ src: 'auxinor-site', action, payload }, '*');
 }
 
-// Intercept all links and buttons globally in editor mode
-document.addEventListener('click', e => {
-  const link = e.target.closest('a');
-  if (link && !link.hasAttribute('target')) e.preventDefault();
-  const btn = e.target.closest('button, input[type="submit"]');
-  if (btn) e.preventDefault();
-}, true);
-
-function getStyles(el) {
-  const cs = window.getComputedStyle(el)
-  return ['fontSize','fontWeight','fontFamily','color','backgroundColor',
-    'paddingTop','paddingBottom','paddingLeft','paddingRight',
-    'marginTop','marginBottom','width','height','minHeight',
-    'display','alignItems','justifyContent','gridTemplateColumns',
-    'gap','letterSpacing','lineHeight','borderRadius','boxShadow'].reduce((o,p) => ({...o,[p]:cs[p]}),{})
-}
-
-// Make sections selectable
-document.querySelectorAll('[data-section-id]').forEach(sec => {
-  sec.style.cursor = 'pointer'
-  sec.style.outline = '2px solid transparent'
-  sec.style.outlineOffset = '-2px'
-  sec.style.transition = 'outline-color .15s'
-
-  sec.addEventListener('mouseenter', () => {
-    if (!sec.classList.contains('ed-sel'))
-      sec.style.outlineColor = 'rgba(18,160,142,0.4)'
-  })
-  sec.addEventListener('mouseleave', () => {
-    if (!sec.classList.contains('ed-sel'))
-      sec.style.outlineColor = 'transparent'
-  })
-  sec.addEventListener('click', e => {
-    if (e.target.closest('[data-element-id]')) return
-    e.stopPropagation()
-    document.querySelectorAll('[data-section-id]').forEach(s => {
-      s.style.outlineColor = 'transparent'; s.classList.remove('ed-sel')
-    })
-    sec.style.outlineColor = '#f59e0b'
-    sec.classList.add('ed-sel')
-    emit('section-click', {
-      id: sec.dataset.sectionId, key: sec.dataset.sectionKey,
-      label: sec.dataset.sectionLabel, styles: getStyles(sec)
-    })
-  })
-})
-
-// Auto-tag all meaningful child elements
-document.querySelectorAll('[data-section-id]').forEach(sec => {
-  const sid = sec.dataset.sectionId;
-  const tags = ['h1','h2','h3','h4','h5','p','span','a','button','img','div','li','label'];
-  let counter = 0;
-  
-  // Recursively tag elements, avoiding editor UI elements
-  const tagNode = (node) => {
-    if (node.nodeType !== 1) return;
-    if (node.classList.contains('ed-bg-overlay')) return;
-    
-    // Only tag meaningful visual elements
-    if (tags.includes(node.tagName.toLowerCase())) {
-      if (!node.hasAttribute('data-element-id')) {
-        node.dataset.elementId = `auto_${sid}_${node.tagName.toLowerCase()}_${counter++}`;
-        node.dataset.elementType = node.tagName.toLowerCase();
-        node.dataset.elementKey = `${node.tagName.toLowerCase()} ${counter}`;
-      }
-    }
-    
-    Array.from(node.children).forEach(tagNode);
-  };
-  
-  Array.from(sec.children).forEach(tagNode);
+/**
+ * Alpine Sync: Watch for state changes to notify editor
+ */
+document.addEventListener('alpine:init', () => {
+    Alpine.effect(() => {
+        const hero = document.querySelector('[data-section-key="home_hero"]');
+        if (hero && window.Alpine) {
+            const data = window.Alpine.$data(hero);
+            if (data && data.activeIndex !== undefined) {
+                emit('hero-slide-switch', { index: data.activeIndex });
+            }
+        }
+    });
 });
 
-// Make elements selectable
-document.querySelectorAll('[data-element-id]').forEach(el => {
-  el.style.cursor = 'pointer' // changed to pointer to imply clickability
-  el.addEventListener('mouseenter', (e) => {
-    e.stopPropagation();
-    el.style.outline = '1px dashed rgba(18,160,142,0.8)';
-    el.style.outlineOffset = '2px';
-  })
-  el.addEventListener('mouseleave', (e) => {
-    e.stopPropagation();
-    el.style.outline = 'transparent';
-  })
-  el.addEventListener('click', e => {
-    e.stopPropagation()
-    e.preventDefault()
-    const sec = el.closest('[data-section-id]');
-    emit('element-click', {
-      sectionId: sec?.dataset.sectionId,
-      id: el.dataset.elementId, key: el.dataset.elementKey,
-      type: el.dataset.elementType || 'text',
-      content: el.innerText, tag: el.tagName.toLowerCase(),
-      src: el.src || '',
-      href: el.href || el.getAttribute('href') || '', styles: getStyles(el)
-    })
-  })
-})
-
-// Deselect on body click
-document.addEventListener('click', e => {
-  if (!e.target.closest('[data-section-id]')) emit('deselect', {})
-})
-
-// Receive commands from parent editor
-window.addEventListener('message', e => {
-  if (e.data?.src !== 'auxinor-editor') return
-  const { action, payload } = e.data
-
-  if (action === 'apply-style') {
-    const t = payload.elementId
-      ? document.querySelector('[data-element-id="'+payload.elementId+'"]')
-      : document.querySelector('[data-section-id="'+payload.sectionId+'"]')
-    if (t) t.style[payload.prop] = payload.value
-  }
-
-  if (action === 'apply-content') {
-    const el = document.querySelector('[data-element-id="'+payload.elementId+'"]')
-    if (el) {
-      if (payload.src && el.tagName.toLowerCase() === 'img') {
-        el.src = payload.src;
-      } else {
-        el.innerHTML = payload.content;
-        if (payload.href) el.href = payload.href;
-      }
+/**
+ * Helper: Extract basic computed styles for the sidebar
+ */
+function getStyles(el) {
+    const cs = window.getComputedStyle(el);
+    const props = ['fontSize', 'fontWeight', 'fontFamily', 'color', 'backgroundColor', 'backgroundImage', 'lineHeight', 'letterSpacing', 'borderRadius', 'boxShadow', 'width', 'height', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight'];
+    
+    const styles = props.reduce((acc, p) => ({ ...acc, [p]: cs[p] }), {});
+    
+    // Also try to extract overlay opacity from the child if it exists
+    const overlay = el.querySelector('.ed-bg-overlay');
+    if (overlay) {
+        const ocs = window.getComputedStyle(overlay);
+        const rgba = ocs.backgroundColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+        if (rgba && rgba[4]) styles.overlayOpacity = rgba[4];
     }
-  }
+    
+    return styles;
+}
 
-  if (action === 'apply-bg') {
-    const sec = document.querySelector('[data-section-id="'+payload.sectionId+'"]')
-    if (!sec) return
-    sec.style.backgroundImage = `url('${payload.url}')`
-    sec.style.backgroundSize = 'cover'
-    sec.style.backgroundPosition = 'center'
-    let ov = sec.querySelector('.ed-bg-overlay')
-    if (!ov) {
-      ov = document.createElement('div')
-      ov.className = 'ed-bg-overlay'
-      ov.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1'
-      sec.style.position = 'relative'
-      sec.prepend(ov)
-    }
-    ov.style.background = `rgba(13,17,23,${payload.opacity})`
-  }
+/**
+ * Auto-tagging: Ensure all meaningful elements have IDs
+ */
+function autoTag() {
+    document.querySelectorAll('[data-section-id]').forEach(sec => {
+        const sid = sec.dataset.sectionId;
+        const tags = ['h1','h2','h3','h4','h5','p','span','a','button','img','li','label','div'];
+        let counter = 0;
+        
+        const tagNode = (node) => {
+            if (node.nodeType !== 1 || node.classList.contains('ed-bg-overlay') || node.classList.contains('ed-section-tab')) return;
+            if (tags.includes(node.tagName.toLowerCase())) {
+                if (!node.hasAttribute('data-element-id')) {
+                    node.dataset.elementId = `auto_${sid}_${node.tagName.toLowerCase()}_${counter++}`;
+                    node.dataset.elementType = node.tagName.toLowerCase();
+                    node.dataset.elementKey = `${node.tagName.toLowerCase()} ${counter}`;
+                }
+                
+                // Add hover effects
+                node.style.cursor = 'pointer';
+                node.addEventListener('mouseenter', e => {
+                    e.stopPropagation();
+                    node.style.outline = '1px dashed rgba(18,160,142,0.8)';
+                    node.style.outlineOffset = '2px';
+                });
+                node.addEventListener('mouseleave', e => {
+                    e.stopPropagation();
+                    node.style.outline = 'transparent';
+                });
+            }
+            Array.from(node.children).forEach(tagNode);
+        };
 
-  if (action === 'toggle-vis') {
-    const sec = document.querySelector('[data-section-id="'+payload.sectionId+'"]')
-    if (sec) sec.style.display = payload.visible ? '' : 'none'
-  }
+        // Add Section Selection Tab
+        if (!sec.querySelector('.ed-section-tab')) {
+            const tab = document.createElement('div');
+            tab.className = 'ed-section-tab';
+            tab.innerHTML = `<span>Section: ${sec.dataset.sectionLabel || sid}</span>`;
+            // Position tab slightly inside to avoid being cut off by header/overflow
+            tab.style.cssText = 'position:absolute; top:10px; left:10px; background:#12a08e; color:#fff; font-family:monospace; font-size:9px; z-index:99999; padding:4px 10px; cursor:pointer; text-transform:uppercase; letter-spacing:1px; display:none; pointer-events:auto;';
+            sec.style.position = (window.getComputedStyle(sec).position === 'static') ? 'relative' : sec.style.position;
+            sec.prepend(tab);
 
-  if (action === 'highlight-section') {
-    document.querySelectorAll('[data-section-id]').forEach(s => {
-      s.style.outlineColor = 'transparent'; s.classList.remove('ed-sel')
-    })
-    const sec = document.querySelector('[data-section-id="'+payload.sectionId+'"]')
-    if (sec) {
-      sec.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      sec.style.outlineColor = '#f59e0b'
-      sec.classList.add('ed-sel')
-    }
-  }
+            sec.addEventListener('mouseenter', () => { tab.style.display = 'block'; sec.style.outline = '2px solid #12a08e'; });
+            sec.addEventListener('mouseleave', () => { tab.style.display = 'none'; sec.style.outline = 'transparent'; });
+            tab.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                emit('section-click', {
+                    id: sec.dataset.sectionId,
+                    key: sec.dataset.sectionKey,
+                    label: sec.dataset.sectionLabel,
+                    styles: getStyles(sec)
+                });
+            });
+        }
 
-  if (action === 'apply-anim') {
-    const sec = document.querySelector('[data-section-id="'+payload.sectionId+'"]')
-    if (!sec) return
-    ['sr','sr-l','sr-r','sr-up','sr-bounce','sr-stagger'].forEach(c =>
-      sec.classList.remove(c))
-    if (payload.animClass) {
-      sec.style.visibility = 'visible';
-      sec.style.opacity = '1';
-      sec.classList.remove('animated')
-      sec.classList.add(payload.animClass)
-      setTimeout(() => sec.classList.add('animated'), 10)
-    }
-  }
-
-  if (action === 'reorder-sections') {
-    const firstSec = document.querySelector('[data-section-id]');
-    if (!firstSec) return;
-    const parent = firstSec.parentElement;
-    const fragment = document.createDocumentFragment();
-    payload.order.forEach(id => {
-      const sec = document.querySelector('[data-section-id="'+id+'"]');
-      if (sec) fragment.appendChild(sec);
+        Array.from(sec.children).forEach(tagNode);
     });
-    parent.appendChild(fragment);
-    // Refresh ScrollReveal if active
-    if (window.sr) window.sr.reveal('.sr-up, .sr-l, .sr-r, .sr-bounce', { interval: 100 });
-  }
-})
+}
+
+/**
+ * State Renderer: Patch the DOM based on incoming state
+ */
+function renderState(state) {
+    if (!state.sections) return;
+    autoTag(); // Re-tag after sync if any new nodes added
+    state.sections.forEach(secData => {
+        const sec = document.querySelector(`[data-section-id="${secData.id}"]`);
+        if (!sec) return;
+
+        // 1. Visibility
+        sec.style.display = secData.visible !== false ? '' : 'none';
+
+        // 2. Section Styles
+        if (secData.styles) {
+            Object.assign(sec.style, secData.styles);
+            if (secData.styles.backgroundImage) {
+                sec.style.backgroundSize = 'cover';
+                sec.style.backgroundPosition = 'center';
+                sec.style.backgroundRepeat = 'no-repeat';
+            }
+            if (secData.styles.overlayOpacity !== undefined && secData.styles.backgroundImage) {
+                let overlay = sec.querySelector('.ed-bg-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'ed-bg-overlay';
+                    overlay.style.cssText = 'position:absolute; inset:0; z-index:0; pointer-events:none;';
+                    sec.style.position = 'relative';
+                    sec.prepend(overlay);
+                }
+                overlay.style.backgroundColor = `rgba(0,0,0,${secData.styles.overlayOpacity})`;
+                overlay.style.display = 'block';
+            } else {
+                let overlay = sec.querySelector('.ed-bg-overlay');
+                if (overlay) overlay.style.display = 'none';
+            }
+        }
+
+        // 3. Section Content (Foreground Images & Text)
+        if (secData.content) {
+            Object.entries(secData.content).forEach(([key, val]) => {
+                if (key.startsWith('el_')) {
+                    const elId = key.replace('el_', '').replace('href_', '').replace('img_', '').replace('setting:', '');
+                    const el = sec.querySelector(`[data-element-id*="${elId}"]`);
+                    if (el) {
+                        if (key.startsWith('el_href_')) {
+                            el.href = val;
+                        } else if (key.startsWith('el_img_')) {
+                            if (el.tagName === 'IMG') el.src = val;
+                            else el.style.backgroundImage = `url("${val}")`;
+                        } else if (key.startsWith('el_setting:') && (typeof val === 'string' && (val.startsWith('http') || val.startsWith('/')))) {
+                            if (el.tagName === 'IMG') el.src = val;
+                            else el.style.backgroundImage = `url("${val}")`;
+                        } else if (!key.includes('style_')) {
+                            el.innerHTML = val;
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 4. Element Specific Styles (if stored in section.styles)
+        if (secData.styles) {
+            Object.entries(secData.styles).forEach(([key, styles]) => {
+                if (key.startsWith('el_style_')) {
+                    const elId = key.replace('el_style_', '');
+                    const el = sec.querySelector(`[data-element-id="${elId}"]`);
+                    if (el) Object.assign(el.style, styles);
+                }
+            });
+        }
+    });
+
+    // Handle reorder
+    const firstSec = document.querySelector('[data-section-id]');
+    if (firstSec && state.sections.length) {
+        const parent = firstSec.parentElement;
+        const currentIds = [...parent.children].filter(c => c.dataset.sectionId).map(c => c.dataset.sectionId);
+        const targetIds = state.sections.map(s => String(s.id));
+        
+        if (JSON.stringify(currentIds) !== JSON.stringify(targetIds)) {
+            const fragment = document.createDocumentFragment();
+            targetIds.forEach(id => {
+                const el = parent.querySelector(`[data-section-id="${id}"]`);
+                if (el) fragment.appendChild(el);
+            });
+            parent.appendChild(fragment);
+        }
+    }
+}
+
+/**
+ * Global Event Listeners
+ */
+document.addEventListener('click', e => {
+    // 1. Block default nav
+    const link = e.target.closest('a');
+    if (link && !link.hasAttribute('target')) e.preventDefault();
+    const btn = e.target.closest('button, input[type="submit"]');
+    if (btn) e.preventDefault();
+
+    // 2. Handle Selection
+    const element = e.target.closest('[data-element-id]');
+    if (element) {
+        e.stopPropagation();
+        const section = element.closest('[data-section-id]');
+        emit('element-click', {
+            id: element.dataset.elementId,
+            sectionId: section?.dataset.sectionId,
+            tag: element.tagName.toLowerCase(),
+            content: element.innerHTML,
+            href: element.getAttribute('href') || '',
+            styles: getStyles(element)
+        });
+        return;
+    }
+
+    const section = e.target.closest('[data-section-id]');
+    if (section) {
+        e.stopPropagation();
+        emit('section-click', {
+            id: section.dataset.sectionId,
+            key: section.dataset.sectionKey,
+            label: section.dataset.sectionLabel,
+            styles: getStyles(section)
+        });
+        return;
+    }
+
+    emit('deselect', {});
+}, true);
+
+// Window Message Listener
+window.addEventListener('message', e => {
+    if (e.data?.src !== 'auxinor-editor') return;
+    const { action, payload } = e.data;
+
+    if (action === 'sync-state') {
+        renderState(payload.state);
+    } else if (action === 'apply-style') {
+        const target = payload.elementId 
+            ? document.querySelector(`[data-element-id="${payload.elementId}"]`)
+            : document.querySelector(`[data-section-id="${payload.sectionId}"]`);
+        if (target) target.style[payload.prop] = payload.value;
+    } else if (action === 'apply-content') {
+        const el = document.querySelector(`[data-element-id="${payload.elementId}"]`);
+        if (el) {
+            if (payload.src) {
+                if (el.tagName === 'IMG') {
+                    el.src = payload.src;
+                } else if (el.dataset.elementId && el.dataset.elementId.includes('setting:') && el.dataset.elementId.includes('bg')) {
+                    // Service card backgrounds and similar bg-div elements: update CSS background-image
+                    el.style.backgroundImage = `url('${payload.src}')`;
+                    el.style.backgroundSize = 'cover';
+                    el.style.backgroundPosition = 'center';
+                } else if (el.dataset.elementId && el.dataset.elementId.includes('logo')) {
+                    el.innerHTML = `<img src="${payload.src}" alt="Logo" style="height:44px; width:auto;">`;
+                } else {
+                    el.innerHTML = `<img src="${payload.src}" alt="Image" style="max-width:100%;height:auto;">`;
+                }
+            }
+            if (payload.content !== null && payload.content !== undefined) el.innerHTML = payload.content;
+            if (payload.href !== null && payload.href !== undefined) el.href = payload.href;
+        }
+
+    } else if (action === 'apply-bg') {
+        const target = payload.elementId
+            ? document.querySelector(`[data-element-id="${payload.elementId}"]`)
+            : document.querySelector(`[data-section-id="${payload.sectionId}"]`);
+        if (target) {
+            let overlay = target.querySelector(':scope > .ed-bg-overlay');
+            
+            // Core background target: if it's a section and has an overlay, use the overlay
+            const bgTarget = (!payload.elementId && overlay) ? overlay : target;
+
+            if (payload.url) {
+                bgTarget.style.backgroundImage = `url('${payload.url}')`;
+                bgTarget.style.backgroundSize = 'cover';
+                bgTarget.style.backgroundPosition = 'center';
+                bgTarget.style.backgroundRepeat = 'no-repeat';
+                
+                // If it's the section itself, but we have an overlay, ensure target image isn't hidden
+                if (bgTarget === target && overlay) {
+                    overlay.style.backgroundColor = 'transparent';
+                    overlay.style.backgroundImage = 'none';
+                }
+            } else {
+                bgTarget.style.backgroundImage = '';
+            }
+
+            if (payload.url && payload.opacity !== undefined) {
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'ed-bg-overlay';
+                    overlay.style.cssText = 'position:absolute; inset:0; z-index:0; pointer-events:none;';
+                    const pos = window.getComputedStyle(target).position;
+                    if (pos === 'static') target.style.position = 'relative';
+                    target.prepend(overlay);
+                }
+                overlay.style.backgroundColor = `rgba(0,0,0,${payload.opacity})`;
+                overlay.style.display = 'block';
+            } else if (overlay && !payload.url) {
+                overlay.style.display = 'none';
+            }
+        }
+    } else if (action === 'toggle-vis') {
+        const sec = document.querySelector(`[data-section-id="${payload.sectionId}"]`);
+        if (sec) sec.style.display = payload.visible ? '' : 'none';
+    } else if (action === 'highlight-section') {
+        const sec = document.querySelector(`[data-section-id="${payload.sectionId}"]`);
+        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (action === 'update-hero-slide') {
+        const hero = document.querySelector('[data-section-key="home_hero"]');
+        if (hero && window.Alpine) {
+            const data = window.Alpine.$data(hero);
+            if (data && data.images && data.images[payload.index]) {
+                if (payload.url !== undefined) data.images[payload.index].url = payload.url;
+                if (payload.overlay !== undefined) data.images[payload.index].overlay = payload.overlay;
+                
+                // Switch to this slide to show the change
+                data.activeIndex = payload.index;
+            }
+        }
+    } else if (action === 'reload-request') {
+        window.location.reload();
+    }
+});
+
+autoTag(); // Initial tag

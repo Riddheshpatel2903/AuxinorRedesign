@@ -18,7 +18,7 @@
 @endsection
 
 @section('content')
-<form action="{{ route('admin.posts.update', $post) }}" method="POST">
+<form action="{{ route('admin.posts.update', $post) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     
@@ -74,11 +74,28 @@
                 </div>
                 
                 <div class="mb-6">
-                    <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Featured Image URL</label>
-                    <input type="url" name="featured_image" value="{{ old('featured_image', $post->featured_image) }}" class="admin-input w-full p-3 font-mono text-[12px]">
-                    @if($post->featured_image)
-                        <img src="{{ $post->featured_image }}" class="mt-2 w-full h-24 object-cover border border-gray-200">
-                    @endif
+                    <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Featured Image</label>
+                    <div class="space-y-4">
+                        @if($post->featured_image)
+                            <div class="relative group h-32 w-full overflow-hidden border border-gray-100">
+                                <img src="{{ $post->featured_image }}" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-ink/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <span class="text-white font-mono text-[9px] uppercase tracking-widest bg-teal/80 px-2 py-1">Current Image</span>
+                                </div>
+                            </div>
+                        @endif
+                        
+                        <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-100 border-dashed rounded-sm cursor-pointer hover:bg-gray-50 transition-colors" x-data="{ fileName: '' }">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-6 h-6 mb-2 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                </svg>
+                                <p class="text-[9px] text-gray-500 uppercase tracking-wide font-semibold text-center px-4" x-text="fileName || 'Replace image'"></p>
+                            </div>
+                            <input type="file" name="featured_image" accept="image/*" class="hidden" @change="fileName = $event.target.files[0].name" />
+                        </label>
+                        @error('featured_image') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    </div>
                 </div>
                 
                 <div class="mb-6">

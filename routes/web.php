@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\EnquiryController as AdminEnquiryController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\IndustryController as AdminIndustryController;
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -41,6 +42,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     
     Route::resource('products', AdminProductController::class);
     Route::resource('categories', AdminCategoryController::class);
+    Route::resource('industries', AdminIndustryController::class);
     
     Route::resource('enquiries', AdminEnquiryController::class)->only(['index', 'show', 'update', 'destroy']);
     Route::patch('enquiries/{id}/status', [AdminEnquiryController::class, 'status'])->name('enquiries.status');
@@ -64,6 +66,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/content',  [\App\Http\Controllers\Admin\PageEditorController::class,'updateContent'])   ->name('content');
         Route::post('/visibility',[\App\Http\Controllers\Admin\PageEditorController::class,'toggleVisibility'])->name('visibility');
         Route::post('/reorder',  [\App\Http\Controllers\Admin\PageEditorController::class,'reorder'])         ->name('reorder');
+        Route::post('/save-all', [\App\Http\Controllers\Admin\PageEditorController::class,'saveAll'])     ->name('save-all');
+        Route::post('/save-settings', [\App\Http\Controllers\Admin\PageEditorController::class,'saveSettings'])->name('save-settings');
         Route::post('/publish/{slug}', [\App\Http\Controllers\Admin\PageEditorController::class,'publish'])   ->name('publish');
         Route::post('/upload-image', [\App\Http\Controllers\Admin\PageEditorController::class,'uploadImage']) ->name('upload-image');
     });
@@ -71,6 +75,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // ============================================================
     // GRAPESJS VISUAL EDITOR ROUTES — Admin only
     // ============================================================
+    // GrapesJS routes commented out due to missing controller
+    /*
     Route::middleware('admin')->prefix('grapesjs')->name('grapesjs.')->group(function () {
         Route::get('/',                                            [\App\Http\Controllers\Admin\GrapesEditorController::class, 'index'])->name('index');
         Route::get('/editor/{slug}',                                [\App\Http\Controllers\Admin\GrapesEditorController::class, 'show'])->name('editor.show');
@@ -81,6 +87,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/editor/{slug}/publish',                       [\App\Http\Controllers\Admin\GrapesEditorController::class, 'togglePublish'])->name('editor.publish');
         Route::post('/editor/{slug}/versions/{versionId}/restore',  [\App\Http\Controllers\Admin\GrapesEditorController::class, 'restoreVersion'])->name('editor.restore');
     });
+    */
 });
 
 // Dynamic public pages driven by visual editor

@@ -122,20 +122,37 @@
                 <h3 class="font-display font-bold text-lg mt-8 mb-4 border-b border-gray-100 pb-4 text-ink">Media</h3>
                 
                 <div class="mb-6">
-                    <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Primary Image</label>
-                    <input type="file" name="image" accept="image/*" class="admin-input w-full p-3 font-mono text-[13px] text-gray-600 bg-white">
-                    <span class="text-gray-400 text-[10px] mt-1 block">Main display image for catalog.</span>
-                    @error('image') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Primary Product Image *</label>
+                    <div class="space-y-4">
+                        <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-100 border-dashed rounded-sm cursor-pointer hover:bg-gray-50 transition-colors bg-white" x-data="{ fileName: '' }">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-8 h-8 mb-4 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                </svg>
+                                <p class="mb-2 text-[10px] text-gray-500 uppercase tracking-wide font-semibold text-center px-4" x-text="fileName || 'Click to upload main image'"></p>
+                                <p class="text-[9px] text-gray-400 font-mono">WEBP, PNG, JPG (MAX. 5MB)</p>
+                            </div>
+                            <input type="file" name="image" accept="image/*" class="hidden" @change="fileName = $event.target.files[0].name" />
+                        </label>
+                        @error('image') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    </div>
                 </div>
 
-                <div class="mb-6">
+                <div class="mb-8">
                     <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Image Gallery</label>
-                    <input type="file" name="gallery[]" multiple accept="image/*" class="admin-input w-full p-3 font-mono text-[13px] text-gray-600 bg-white">
-                    <span class="text-gray-400 text-[10px] mt-1 block">Select multiple images for the product gallery.</span>
-                    @error('gallery.*') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <div class="space-y-4">
+                        <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-100 border-dashed rounded-sm cursor-pointer hover:bg-gray-50 transition-colors bg-white" x-data="{ count: 0 }">
+                            <div class="flex flex-col items-center justify-center py-4">
+                                <svg class="w-6 h-6 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-wide font-semibold" x-text="count > 0 ? count + ' files selected' : 'Upload gallery images'"></p>
+                            </div>
+                            <input type="file" name="gallery[]" multiple accept="image/*" class="hidden" @change="count = $event.target.files.length" />
+                        </label>
+                        @error('gallery.*') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    </div>
                 </div>
                 
-                <button type="submit" class="w-full bg-teal hover:bg-teal-light hover:text-teal transition-colors text-white px-8 py-3 font-display font-bold text-[11px] uppercase tracking-widest text-center">
+                <button type="submit" class="w-full bg-teal hover:bg-teal-light hover:text-teal transition-colors text-white px-8 py-4 font-display font-bold text-[11px] uppercase tracking-widest text-center shadow-lg hover:shadow-teal/20 active:scale-[0.98] duration-200">
                     Save Product
                 </button>
             </div>

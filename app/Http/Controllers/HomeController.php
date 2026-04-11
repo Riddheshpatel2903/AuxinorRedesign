@@ -8,6 +8,7 @@ use App\Models\ProductCategory;
 use App\Models\Product;
 use App\Models\BlogPost;
 use App\Models\HeroSlide;
+use App\Models\Industry;
 
 class HomeController extends Controller
 {
@@ -18,14 +19,7 @@ class HomeController extends Controller
         $categories = ProductCategory::active()->ordered()->get();
         $featuredProducts = Product::with('category')->active()->featured()->ordered()->limit(8)->get();
         
-        $industries = [
-            (object)['name' => 'Speciality Chemicals', 'icon' => '🧪', 'desc' => 'High-purity chemicals for advanced manufacturing.', 'slug' => 'speciality-chemicals'],
-            (object)['name' => 'Petrochemicals', 'icon' => '🛢️', 'desc' => 'Core building blocks for various industries.', 'slug' => 'petrochemicals'],
-            (object)['name' => 'Pharmaceuticals', 'icon' => '💊', 'desc' => 'Active pharmaceutical ingredients and excipients.', 'slug' => 'pharmaceuticals'],
-            (object)['name' => 'Dyes & Intermediates', 'icon' => '🎨', 'desc' => 'Colorants and intermediate compounds.', 'slug' => 'dyes-intermediates'],
-            (object)['name' => 'Agrochemicals', 'icon' => '🌱', 'desc' => 'Chemicals for agricultural applications.', 'slug' => 'agrochemicals'],
-            (object)['name' => 'Food Industry', 'icon' => '🍞', 'desc' => 'Food-grade additives and preservatives.', 'slug' => 'food-industry'],
-        ];
+        $industries = Industry::active()->ordered()->get();
 
         $recentPosts = BlogPost::published()->latest('published_at')->limit(3)->get();
         

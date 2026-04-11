@@ -5,12 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    protected $imageService;
+
+    public function __construct(ImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
     public function index(Request $request)
     {
         $query = Product::with('category')->latest();
@@ -70,14 +77,16 @@ class ProductController extends Controller
         if (!isset($validated['is_active'])) $validated['is_active'] = false;
         if (!isset($validated['is_featured'])) $validated['is_featured'] = false;
 
+        // Process Primary Image
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = $this->imageService->upload($request->file('image'), 'products');
         }
 
+        // Process Gallery Images
         if ($request->hasFile('gallery')) {
             $gallery = [];
             foreach ($request->file('gallery') as $file) {
-                $gallery[] = $file->store('products/gallery', 'public');
+                $gallery[] = $this->imageService->upload($file, 'products/gallery');
             }
             $validated['gallery'] = $gallery;
         }
@@ -115,22 +124,23 @@ class ProductController extends Controller
         if (!isset($validated['is_active'])) $validated['is_active'] = false;
         if (!isset($validated['is_featured'])) $validated['is_featured'] = false;
 
-        // If a new image is uploaded, store it. Otherwise, unset it from validated so we don't null it out.
+        // Update Primary Image
         if ($request->hasFile('image')) {
+            // Delete old image
             if ($product->image) {
-                Storage::disk('public')->delete($product->image);
+                $this->imageService->delete($product->image);
             }
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = $this->imageService->upload($request->file('image'), 'products');
         } else {
             unset($validated['image']);
         }
 
-        // If new gallery images are uploaded, append them to existing gallery. 
+        // Update Gallery Images (append new ones)
         if ($request->hasFile('gallery')) {
             $existingGallery = $product->gallery ?? [];
             $newGallery = [];
             foreach ($request->file('gallery') as $file) {
-                $newGallery[] = $file->store('products/gallery', 'public');
+                $newGallery[] = $this->imageService->upload($file, 'products/gallery');
             }
             $validated['gallery'] = array_merge($existingGallery, $newGallery);
         }
@@ -142,6 +152,18 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        // Cleanup main image
+        if ($product->image) {
+            $this->imageService->delete($product->image);
+        }
+
+        // Cleanup gallery images
+        if (is_array($product->gallery)) {
+            foreach ($product->gallery as $galImg) {
+                $this->imageService->delete($galImg);
+            }
+        }
+
         $product->delete();
         return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
     }

@@ -4,22 +4,22 @@
 
 @section('content')
 <!-- Page Header -->
-<div class="bg-bg border-b border-line py-12 px-4 md:px-8">
-    <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row md:items-end justify-between">
-        <div>
-            <div class="font-mono text-[10px] uppercase tracking-widest text-teal mb-3">
+<div data-section-id="129" data-section-key="product_hero" data-section-label="Product Hero" class="bg-bg border-b border-line py-12 px-4 md:px-8 relative @auth cms-editable @endauth" data-cms-label="Edit Header">
+    <div class="max-w-[1400px] mx-auto flex flex-col md:flex-row md:items-end justify-between relative z-10">
+ <div>
+            <div class="font-sans font-bold text-[10px] uppercase tracking-[2px] text-teal mb-3">
                 <a href="{{ route('home') }}" class="hover:text-ink transition-colors">Home</a>
                 <span class="mx-2 text-muted">/</span>
                 <span class="text-ink">Products</span>
             </div>
-            <h1 class="font-display font-extrabold text-[36px] md:text-[48px] leading-none mb-4 text-ink">Product <em class="font-serif italic font-normal text-teal">Catalogue</em></h1>
-            <p class="font-serif text-[14px] text-muted max-w-xl">Browse our complete range of industrial chemicals, encompassing bulk solvents, monomers, and specialized formulations.</p>
+            <h1 data-element-id="product_title" class="font-display font-extrabold text-[48px] md:text-[64px] leading-none mb-4 text-ink">Product <em class="italic font-normal text-teal">Catalogue</em></h1>
+            <p data-element-id="product_desc" class="font-sans text-[15px] text-muted max-w-xl">Browse our complete range of industrial chemicals, encompassing bulk solvents, monomers, and specialized formulations.</p>
         </div>
         
         <!-- Search -->
         <div class="mt-8 md:mt-0 w-full md:w-auto">
-            <form action="{{ route('products.index') }}" method="GET" class="relative">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search products, CAS..." class="w-full md:w-72 bg-white border border-line py-3 px-4 text-sm font-serif focus:outline-none focus:border-teal transition-colors">
+ <form action="{{ route('products.index') }}" method="GET" class="relative">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search products, CAS..." class="w-full md:w-72 bg-white border border-line py-3 px-4 text-sm font-sans focus:outline-none focus:border-teal transition-colors">
                 <button type="submit" class="absolute right-0 top-0 bottom-0 px-4 text-teal hover:text-ink transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </button>
@@ -34,18 +34,18 @@
         <!-- Sidebar -->
         <aside class="hidden lg:block sticky top-28 self-start">
             <h3 class="font-display font-bold text-[13px] uppercase tracking-wider mb-6 pb-4 border-b border-line text-ink">Categories</h3>
-            <ul class="space-y-2">
+ <ul class="space-y-2">
                 <li>
-                    <a href="{{ route('products.index') }}" class="flex items-center justify-between font-mono text-[11px] uppercase tracking-wider py-2 {{ !request()->routeIs('products.category') ? 'text-teal font-bold' : 'text-muted hover:text-ink' }}">
+                    <a href="{{ route('products.index') }}" class="flex items-center justify-between font-sans font-bold text-[11px] uppercase tracking-widest py-2 {{ !request()->routeIs('products.category') ? 'text-teal' : 'text-muted hover:text-ink' }}">
                         <span>All Products</span>
-                        <span>{{ $allProducts->total() }}</span>
+                        <span class="bg-line px-2 py-0.5 rounded-full text-[9px]">{{ $allProducts->total() }}</span>
                     </a>
                 </li>
                 @foreach($categories as $cat)
                 <li>
-                    <a href="{{ route('products.category', $cat->slug) }}" class="flex items-center justify-between font-mono text-[11px] uppercase tracking-wider py-2 {{ request()->segment(2) === $cat->slug ? 'text-teal font-bold' : 'text-muted hover:text-ink' }} transition-colors">
+                    <a href="{{ route('products.category', $cat->slug) }}" class="flex items-center justify-between font-sans font-bold text-[11px] uppercase tracking-widest py-2 {{ request()->segment(2) === $cat->slug ? 'text-teal' : 'text-muted hover:text-ink' }} transition-colors">
                         <span>{{ $cat->name }}</span>
-                        <span>{{ $cat->products->count() }}</span>
+                        <span class="bg-line px-2 py-0.5 rounded-full text-[9px]">{{ $cat->products->count() }}</span>
                     </a>
                 </li>
                 @endforeach
@@ -71,7 +71,9 @@
                         
                         <!-- Premium Background Image -->
                         <div class="absolute inset-0 z-0">
-                            <img src="{{ $imgFallback[$idx % count($imgFallback)] }}" class="w-full h-full object-cover filter brightness-[0.8] group-hover:brightness-100 group-hover:scale-105 transition-all duration-700" alt="Chemical container">
+                            <img src="{{ $product->image ? (str_starts_with($product->image, 'http') ? $product->image : Storage::url($product->image)) : $imgFallback[$idx % count($imgFallback)] }}" 
+                                 class="w-full h-full object-cover filter brightness-[0.8] group-hover:brightness-100 group-hover:scale-105 transition-all duration-700" 
+                                 alt="{{ $product->name }}">
                             <div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/50 to-transparent"></div>
                         </div>
 
@@ -81,10 +83,10 @@
                                 <span class="font-display text-[16px] text-white font-medium tracking-wider">{{ $product->chemical_formula ?? $product->name[0] }}</span>
                             </div>
                             
-                            <div>
-                                <span class="font-mono text-[9px] uppercase tracking-widest text-teal-light/80 mb-2 block">{{ $product->cas_number ? 'CAS ' . $product->cas_number : 'NO CAS' }}</span>
+ <div>
+                                <span class="font-sans font-bold text-[10px] uppercase tracking-widest text-teal-light mb-2 block">{{ $product->cas_number ? 'CAS ' . $product->cas_number : 'NO CAS' }}</span>
                                 <h3 class="font-display font-semibold text-[18px] text-white leading-tight mb-2 group-hover:text-teal-light transition-colors">{{ $product->name }}</h3>
-                                <span class="font-serif italic text-[11px] text-white/70 line-clamp-2">{{ $product->short_description }}</span>
+                                <span class="font-sans italic text-[11px] text-white/70 line-clamp-2">{{ $product->short_description }}</span>
                             </div>
                         </div>
                     </a>
@@ -96,11 +98,11 @@
                     {{ $allProducts->withQueryString()->links('pagination::tailwind') }}
                 </div>
             @else
-                <div class="bg-bg border border-line border-dashed p-16 text-center src-up">
+ <div class="bg-bg border border-line border-dashed p-16 text-center src-up">
                     <div class="text-4xl mb-4">🔍</div>
                     <h3 class="font-display font-bold text-xl mb-2 text-ink">No products found for "{{ request('search') }}"</h3>
-                    <p class="font-serif text-[14px] text-muted mb-6">Try adjusting your search terms or browse our categories.</p>
-                    <a href="{{ route('products.index') }}" class="font-mono text-[11px] uppercase tracking-wider text-teal hover:text-ink transition-colors pb-1 border-b border-teal">Clear Search</a>
+                    <p class="font-sans text-[14px] text-muted mb-6">Try adjusting your search terms or browse our categories.</p>
+                    <a href="{{ route('products.index') }}" class="font-sans font-bold text-[11px] uppercase tracking-widest text-teal hover:text-ink transition-colors pb-1 border-b border-teal">Clear Search</a>
                 </div>
             @endif
         </div>

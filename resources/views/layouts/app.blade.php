@@ -89,7 +89,8 @@
         </script>
         @endif
         @if(app('request')->input('editor_mode'))
-            <script src="{{ asset('js/editor-receiver.js') }}?v={{ time() }}"></script>
+            <!-- Visual Editor Receiver Script -->
+            <script src="{{ asset('js/editor-receiver.js') }}?v={{ filemtime(public_path('js/editor-receiver.js')) }}"></script>
             <script>
                 document.addEventListener('click', e => {
                     const link = e.target.closest('a');
@@ -133,6 +134,24 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const cmsData = @json($cmsSections);
+
+            // Auto-tag elements to match editor IDs
+            document.querySelectorAll('[data-section-id]').forEach(sec => {
+                const sid = sec.dataset.sectionId;
+                const tags = ['h1','h2','h3','h4','h5','p','span','a', 'button', 'img', 'li', 'label', 'div'];
+                let counter = 0;
+                const tagNode = (node) => {
+                    if (node.nodeType !== 1 || node.classList.contains('ed-bg-overlay')) return;
+                    if (tags.includes(node.tagName.toLowerCase())) {
+                        if (!node.hasAttribute('data-element-id')) {
+                            node.dataset.elementId = `auto_${sid}_${node.tagName.toLowerCase()}_${counter++}`;
+                        }
+                    }
+                    Array.from(node.children).forEach(tagNode);
+                };
+                Array.from(sec.children).forEach(tagNode);
+            });
+
             cmsData.forEach(sec => {
                 const secEl = document.querySelector(`[data-section-id="${sec.id}"]`);
                 if (!secEl) return;
@@ -140,50 +159,87 @@
                 // Visible?
                 if (sec.is_visible === 0) secEl.style.display = 'none';
                 
-                // Section Background?
-                if (sec.content && sec.content.bg_image_url) {
-                    secEl.style.backgroundImage = `url('${sec.content.bg_image_url}')`;
-                    secEl.style.backgroundSize = 'cover';
-                    secEl.style.backgroundPosition = 'center';
-                    if (sec.content.bg_overlay !== undefined) {
-                        let ov = secEl.querySelector('.ed-bg-overlay');
+                // Apply Section Styles
+                if (sec.styles) {
+                    Object.assign(secEl.style, sec.styles);
+                    
+                    if (sec.styles.backgroundImage) {
+                        secEl.style.backgroundSize = 'cover';
+                        secEl.style.backgroundPosition = 'center';
+                        secEl.style.backgroundRepeat = 'no-repeat';
+                    }
+
+                    // Handle Background Overlay
+                    let ov = secEl.querySelector('.ed-bg-overlay');
+                    if (sec.styles.backgroundImage && sec.styles.overlayOpacity !== undefined) {
                         if (!ov) {
                             ov = document.createElement('div');
                             ov.className = 'ed-bg-overlay';
-                            ov.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1';
+                            ov.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:0';
                             secEl.style.position = 'relative';
                             secEl.prepend(ov);
                         }
-                        ov.style.background = `rgba(13,17,23,${sec.content.bg_overlay})`;
+                        ov.style.backgroundColor = `rgba(0,0,0,${sec.styles.overlayOpacity})`;
+                        ov.style.display = 'block';
+                    } else if (ov) {
+                        ov.style.display = 'none';
                     }
+
+                    // Element Styles
+                    Object.entries(sec.styles).forEach(([key, styles]) => {
+                        if (key.startsWith('el_style_')) {
+                            const elId = key.replace('el_style_', '');
+                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
+                            if (node) {
+                                Object.assign(node.style, styles);
+                                
+                                // Handle Element Background Overlay
+                                let elOv = node.querySelector(':scope > .ed-bg-overlay');
+                                if (styles.backgroundImage && styles.overlayOpacity !== undefined) {
+                                    if (!elOv) {
+                                        elOv = document.createElement('div');
+                                        elOv.className = 'ed-bg-overlay';
+                                        elOv.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:0';
+                                        const pos = window.getComputedStyle(node).position;
+                                        if (pos === 'static') node.style.position = 'relative';
+                                        node.prepend(elOv);
+                                    }
+                                    elOv.style.backgroundColor = `rgba(0,0,0,${styles.overlayOpacity})`;
+                                    elOv.style.display = 'block';
+                                } else if (elOv) {
+                                    elOv.style.display = 'none';
+                                }
+                            }
+                        }
+                    });
                 }
                 
-                // Section Styles (Margin/Padding etc)
-                if (sec.styles) Object.assign(secEl.style, sec.styles);
-                
-                // Element Content & Styles
+                // Element Content
                 if (sec.content) {
                     Object.keys(sec.content).forEach(key => {
-                        let elId = '';
-                        if (key.startsWith('el_href_')) {
-                            elId = key.replace('el_href_', '');
-                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
-                            if (node) node.href = sec.content[key];
-                        } else if (key.startsWith('el_style_')) {
-                            elId = key.replace('el_style_', '');
-                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
-                            if (node && typeof sec.content[key] === 'object') {
-                                Object.assign(node.style, sec.content[key]);
+                        // First try finding node with exactly the ID in the key (normalized)
+                        let elementId = key.startsWith('el_href_') ? key.replace('el_href_', '') : 
+                                      (key.startsWith('el_img_') ? key.replace('el_img_', '') : 
+                                      (key.startsWith('el_') ? key.replace('el_', '') : key));
+                        
+                        let node = secEl.querySelector(`[data-element-id="${elementId}"]`);
+                        
+                        // Fallback: If not found, try the raw key as ID (some tools use prefixed IDs)
+                        if (!node) node = secEl.querySelector(`[data-element-id="${key}"]`);
+
+                        if (node) {
+                            if (key.startsWith('el_href_')) node.href = sec.content[key];
+                            else if (key.startsWith('el_img_')) node.src = sec.content[key];
+                            else if (key.startsWith('el_') || key.startsWith('el_setting:')) {
+                                const val = sec.content[key];
+                                // If it's a setting on a div/section and looks like a URL, handle as background
+                                if (key.startsWith('el_setting:') && (node.tagName === 'DIV' || node.tagName === 'SECTION') && 
+                                   (typeof val === 'string' && (val.startsWith('http') || val.startsWith('/')))) {
+                                    node.style.backgroundImage = `url("${val}")`;
+                                } else {
+                                    node.innerHTML = val;
+                                }
                             }
-                        } else if (key.startsWith('el_img_')) {
-                            elId = key.replace('el_img_', '');
-                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
-                            if (node) node.src = sec.content[key];
-                        } else if (key.startsWith('el_')) {
-                            // Raw content (text)
-                            elId = key.replace('el_', '');
-                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
-                            if (node) node.innerHTML = sec.content[key];
                         }
                     });
                 }

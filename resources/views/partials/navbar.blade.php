@@ -1,14 +1,13 @@
 <nav id="navbar" class="bg-white border-b border-line sticky top-0 z-[200] transition-shadow duration-300" style="height: 74px;" x-data="{ mobileMenuOpen: false, productsOpen: false }" @scroll.window="$el.classList.toggle('shadow-md', window.scrollY > 60)">
     <div class="max-w-[1400px] mx-auto px-4 md:px-8 h-full flex justify-between items-center">
         <!-- Logo -->
-        <a href="{{ route('home') }}" class="flex items-center space-x-3 group">
-            <div class="w-[44px] h-[44px] bg-ink flex flex-col justify-end overflow-hidden relative">
-                <div class="absolute inset-0 flex items-center justify-center font-mono text-teal-2 text-lg pt-1 group-hover:scale-110 transition-transform">AC</div>
-                <div class="h-[3px] bg-teal-2 w-full mt-auto"></div>
-            </div>
-            <div class="flex flex-col">
-                <span class="font-display font-bold text-sm leading-tight text-ink uppercase tracking-wider">AUXINOR</span>
-                <span class="font-mono text-[10px] text-muted">Chemicals LLP</span>
+        <a href="{{ route('home') }}" class="flex items-center @auth cms-editable @endauth" data-section-id="{{ ($sections ?? collect())->where('section_key', 'branding')->first()->id ?? '130' }}" data-section-key="branding" data-section-label="Site Branding">
+            <div class="logo-wrapper h-[44px]">
+                @php
+                    $logoPath = !empty($globalSettings['logo_url']) ? $globalSettings['logo_url'] : 'assets/images/logo.png';
+                    $logoUrl = str_starts_with($logoPath, 'http') ? $logoPath : asset($logoPath);
+                @endphp
+                <img data-element-id="el_setting:logo_url" src="{{ $logoUrl }}" alt="{{ $globalSettings['company_name'] ?? 'Auxinor' }}" class="h-full w-auto object-contain">
             </div>
         </a>
 
@@ -54,7 +53,9 @@
                      style="display: none;">
                      <a href="{{ route('products.index') }}" class="block px-4 py-2 text-xs font-display uppercase tracking-wider hover:bg-bg hover:text-teal border-b border-line mb-1">All Products</a>
                      @foreach($globalCategories ?? [] as $category)
+                        @if(is_object($category))
                         <a href="{{ route('products.category', $category->slug) }}" class="block px-4 py-2 text-xs font-display uppercase tracking-wider hover:bg-bg hover:text-teal">{{ $category->icon }} {{ $category->name }}</a>
+                        @endif
                      @endforeach
                 </div>
             </div>

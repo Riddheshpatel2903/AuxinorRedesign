@@ -17,9 +17,9 @@ class BlogController extends Controller
     public function show($slug)
     {
         $post = BlogPost::published()->where('slug', $slug)->firstOrFail();
-        $relatedPosts = BlogPost::published()->where('category', $post->category)
+        $related = BlogPost::published()->where('category', $post->category)
                             ->where('id', '!=', $post->id)
                             ->latest('published_at')->limit(3)->get();
-        return view('insights.show', compact('post', 'relatedPosts'));
+        return view('insights.show', compact('post', 'related'));
     }
 }

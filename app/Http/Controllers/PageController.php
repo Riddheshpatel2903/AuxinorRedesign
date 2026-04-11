@@ -21,6 +21,7 @@ class PageController extends Controller
             if ($slug === 'home' || $slug === 'index') {
                 $categories = \App\Models\ProductCategory::all();
                 $featuredProducts = \App\Models\Product::with('category')->take(8)->get();
+                $industries = \App\Models\Industry::where('is_active', true)->orderBy('order')->get();
                 $stats = [
                     'years' => 15,
                     'products' => 500,
@@ -28,15 +29,17 @@ class PageController extends Controller
                     'reach' => '20+ Countries'
                 ];
                 $globalSettings = \App\Models\Setting::pluck('value', 'key')->toArray();
-                return view('home', compact('categories', 'featuredProducts', 'stats', 'globalSettings', 'sections'));
+                $recentPosts = \App\Models\BlogPost::latest('published_at')->limit(3)->get();
+                return view('home', compact('categories', 'featuredProducts', 'stats', 'globalSettings', 'sections', 'recentPosts', 'industries'));
             }
 
+            $industries = \App\Models\Industry::where('is_active', true)->orderBy('order')->get();
             $view = "pages.{$slug}";
             if (view()->exists($view)) {
-                return view($view, compact('sections'));
+                return view($view, compact('sections', 'industries'));
             }
             if (view()->exists($slug)) {
-                return view($slug, compact('sections'));
+                return view($slug, compact('sections', 'industries'));
             }
             abort(404);
         }

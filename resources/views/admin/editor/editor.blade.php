@@ -13,12 +13,14 @@
     const CSRF = '{{ csrf_token() }}'
     const PAGE_SLUG = '{{ $pageSlug }}'
     const ROUTES = {
-      style:      '{{ route("admin.editor.style") }}',
-      content:    '{{ route("admin.editor.content") }}',
-      visibility: '{{ route("admin.editor.visibility") }}',
-      reorder:    '{{ route("admin.editor.reorder") }}',
-      publish:    '{{ route("admin.editor.publish", $pageSlug) }}',
-      upload:     '{{ route("admin.editor.upload-image") }}',
+      style:        '{{ route("admin.editor.style") }}',
+      content:      '{{ route("admin.editor.content") }}',
+      visibility:   '{{ route("admin.editor.visibility") }}',
+      reorder:      '{{ route("admin.editor.reorder") }}',
+      publish:      '{{ route("admin.editor.publish", $pageSlug) }}',
+      upload:       '{{ route("admin.editor.upload-image") }}',
+      saveAll:      '{{ route("admin.editor.save-all") }}',
+      saveSettings: '{{ route("admin.editor.save-settings") }}',
     }
     const SETTINGS = @json($globalSettings);
     @php
@@ -226,6 +228,19 @@
             <input type="file" class="ep-in" id="c-imageUpload" accept="image/*">
             <div id="imageUploadStatus" style="font-size:9px;color:var(--ed-teal2);margin-top:4px"></div>
           </div>
+          <div style="display:flex; gap:10px; margin-top:10px">
+            <button class="ep-apply" id="applyImageBtn" style="flex:1">Apply Image</button>
+            <button class="ep-apply" id="removeImageBtn" style="flex:1; background:#ef4444">Remove Image</button>
+          </div>
+        </div>
+        <div class="ep-group" id="metaImageGroup" style="display:none">
+          <div class="ep-title">Section Decoration</div>
+          <div class="ep-field">
+            <label id="metaImageLabel">Item Image</label>
+            <input type="file" class="ep-in" id="c-metaImageUpload" accept="image/*">
+            <div id="metaImageUploadStatus" style="font-size:9px;color:var(--ed-teal2);margin-top:4px"></div>
+          </div>
+          <button class="ep-apply" id="applyMetaImageBtn" style="margin-top:10px">Apply Decoration</button>
         </div>
         <div class="ep-group">
           <div class="ep-title">Section Background</div>
@@ -237,23 +252,57 @@
           <div class="ep-field"><label>Overlay (0–1)</label>
             <input class="ep-in" type="range" id="c-bgOverlay" min="0" max="1" step="0.05" value="0.5">
             <span id="bgOverlayVal">0.5</span></div>
-          <button class="ep-apply" id="applyBgBtn">Apply Background</button>
+          <div style="display:flex; gap:10px">
+            <button class="ep-apply" id="applyBgBtn" style="flex:1">Apply BG</button>
+            <button class="ep-apply" id="removeBgBtn" style="flex:1; background:#ef4444">Remove BG</button>
+          </div>
         </div>
         <div class="ep-group" id="heroSlidesGroup" style="display:none">
-          <div class="ep-title">Hero Backgrounds</div>
+          <div class="ep-title">Hero Slides Configuration</div>
           @for($i=1; $i<=4; $i++)
-          <div class="ep-field" style="margin-top:6px; border-top:1px dashed var(--ed-border); padding-top:6px;">
-            <label style="color:var(--ed-teal);">Slide {{ $i }} Image Upload</label>
-            <input type="file" id="heroUpload{{ $i }}" class="ep-in" accept="image/*">
+          <div class="ep-field" style="margin-top:6px; background: rgba(0,0,0,0.1); border-radius: 4px; border:1px solid var(--ed-border); padding:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                <label style="color:var(--ed-teal); font-weight:600; font-size:11px;">#{{ $i }} Background Slide</label>
+            </div>
+            
+            <div style="display:flex; gap: 10px; align-items: flex-start; margin-bottom: 8px;">
+                <!-- Thumbnail -->
+                <div id="heroThumb{{ $i }}" style="width: 50px; height: 50px; background: #1c2333; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid var(--ed-border); flex-shrink: 0;">
+                    <span style="color:#4b5563; font-size:9px;">Empty</span>
+                </div>
+                
+                <div style="flex: 1; display:flex; flex-direction: column; gap: 6px;">
+                    <input type="file" id="heroUpload{{ $i }}" class="ep-in" accept="image/*" style="font-size: 10px; padding: 4px;">
+                    <button class="ep-apply" id="removeHeroBg{{ $i }}" style="background:#ef4444; padding:3px 8px; font-size:9px; border-radius:3px;">Remove Image</button>
+                    <div id="heroStatus{{ $i }}" style="font-size:9px;color:var(--ed-teal); height:12px; line-height:12px;"></div>
+                </div>
+            </div>
+            
             <input type="hidden" id="c-hero_bg_{{ $i }}">
-            <div id="heroStatus{{ $i }}" style="font-size:9px;color:var(--ed-teal);margin-top:4px"></div>
-          </div>
-          <div class="ep-field">
-            <label>Slide {{ $i }} Overlay</label>
-            <input class="ep-in" type="range" id="c-hero_bg_overlay_{{ $i }}" min="0" max="1" step="0.05" value="0.5">
+            
+            <div style="display:flex; align-items:center; gap:8px; margin-top: 6px;">
+              <label style="font-size: 10px; color: var(--ed-text); opacity:0.8;">Dark Overlay</label>
+              <input class="ep-in" style="flex:1" type="range" id="c-hero_bg_overlay_{{ $i }}" min="0" max="1" step="0.05" value="0.5">
+            </div>
           </div>
           @endfor
-          <button class="ep-apply" id="applyHeroSlidesBtn" style="margin-top:15px">Save Header Slides</button>
+          <button class="ep-apply" id="applyHeroSlidesBtn" style="margin-top:10px; background:var(--ed-teal); color:#fff; width:100%;">Save Hero Configuration</button>
+        </div>
+        <div class="ep-group" id="staticHeroGroup" style="display:none">
+          <div class="ep-title">Sub-page Hero Background</div>
+          <div class="ep-field">
+            <label>Hero Background Image</label>
+            <div id="staticHeroThumb" style="width: 100%; height: 100px; background: #1c2333; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid var(--ed-border); margin-bottom: 8px;">
+              <span style="color:#4b5563; font-size:10px;">Select Image</span>
+            </div>
+            <input type="file" id="staticHeroUpload" class="ep-in" accept="image/*" style="font-size:10px; padding:4px;">
+            <input type="hidden" id="c-hero_bg_subpage">
+          </div>
+          <div class="ep-field">
+            <label>Overlay Darkness</label>
+            <input class="ep-in" type="range" id="c-hero_bg_subpage_overlay" min="0" max="1" step="0.05" value="0.5">
+          </div>
+          <button class="ep-apply" id="applyStaticHeroBtn" style="margin-top:10px; background:var(--ed-teal); color:#fff; width:100%;">Save Hero Background</button>
         </div>
       </div>
 
@@ -305,6 +354,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  <script src="{{ asset('js/editor.js') }}?v={{ time() }}"></script>
+  <script src="{{ asset('js/store.js') }}?v={{ filemtime(public_path('js/store.js')) }}"></script>
+  <script src="{{ asset('js/bridge.js') }}?v={{ filemtime(public_path('js/bridge.js')) }}"></script>
+  <script src="{{ asset('js/editor.js') }}?v={{ filemtime(public_path('js/editor.js')) }}"></script>
   </body>
   </html>

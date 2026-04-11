@@ -123,32 +123,55 @@
                 <h3 class="font-display font-bold text-lg mt-8 mb-4 border-b border-gray-100 pb-4 text-ink">Media</h3>
                 
                 <div class="mb-6">
-                    <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Primary Image</label>
-                    @if($product->image)
-                        <div class="mb-3">
-                            <img src="{{ Storage::url($product->image) }}" alt="Current Image" class="w-full h-auto border border-gray-200 rounded-sm">
-                        </div>
-                    @endif
-                    <input type="file" name="image" accept="image/*" class="admin-input w-full p-3 font-mono text-[13px] text-gray-600 bg-white">
-                    <span class="text-gray-400 text-[10px] mt-1 block">Upload new to replace existing image.</span>
-                    @error('image') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Primary Product Image</label>
+                    <div class="space-y-4">
+                        @if($product->image)
+                            <div class="relative group h-40 w-full overflow-hidden border border-gray-100 rounded-sm">
+                                <img src="{{ str_starts_with($product->image, 'http') ? $product->image : Storage::url($product->image) }}" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-ink/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <span class="text-white font-mono text-[9px] uppercase tracking-widest bg-teal/80 px-2 py-1">Current Image</span>
+                                </div>
+                            </div>
+                        @endif
+                        
+                        <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-100 border-dashed rounded-sm cursor-pointer hover:bg-gray-50 transition-colors bg-white" x-data="{ fileName: '' }">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-6 h-6 mb-2 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                </svg>
+                                <p class="text-[9px] text-gray-500 uppercase tracking-wide font-semibold text-center px-4" x-text="fileName || 'Click to replace image'"></p>
+                            </div>
+                            <input type="file" name="image" accept="image/*" class="hidden" @change="fileName = $event.target.files[0].name" />
+                        </label>
+                        @error('image') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    </div>
                 </div>
 
-                <div class="mb-6">
+                <div class="mb-8">
                     <label class="block font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-2">Image Gallery</label>
-                    @if($product->gallery && count($product->gallery) > 0)
-                        <div class="grid grid-cols-3 gap-2 mb-3">
-                            @foreach($product->gallery as $galImg)
-                                <img src="{{ Storage::url($galImg) }}" alt="Gallery image" class="w-full h-24 object-cover border border-gray-200 rounded-sm shadow-sm">
-                            @endforeach
-                        </div>
-                    @endif
-                    <input type="file" name="gallery[]" multiple accept="image/*" class="admin-input w-full p-3 font-mono text-[13px] text-gray-600 bg-white">
-                    <span class="text-gray-400 text-[10px] mt-1 block">Upload new to append to existing gallery.</span>
-                    @error('gallery.*') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <div class="space-y-4">
+                        @if($product->gallery && count($product->gallery) > 0)
+                            <div class="grid grid-cols-3 gap-2">
+                                @foreach($product->gallery as $galImg)
+                                    <div class="h-20 border border-gray-100 rounded-sm overflow-hidden">
+                                        <img src="{{ str_starts_with($galImg, 'http') ? $galImg : Storage::url($galImg) }}" class="w-full h-full object-cover">
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <label class="flex flex-col items-center justify-center w-full h-20 border-2 border-gray-100 border-dashed rounded-sm cursor-pointer hover:bg-gray-50 transition-colors bg-white" x-data="{ count: 0 }">
+                            <div class="flex flex-col items-center justify-center py-2">
+                                <svg class="w-5 h-5 mb-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                <p class="text-[9px] text-gray-500 uppercase tracking-wide font-semibold" x-text="count > 0 ? count + ' files selected' : 'Add to gallery'"></p>
+                            </div>
+                            <input type="file" name="gallery[]" multiple accept="image/*" class="hidden" @change="count = $event.target.files.length" />
+                        </label>
+                        @error('gallery.*') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    </div>
                 </div>
                 
-                <button type="submit" class="w-full bg-teal hover:bg-teal-light hover:text-teal transition-colors text-white px-8 py-3 font-display font-bold text-[11px] uppercase tracking-widest text-center">
+                <button type="submit" class="w-full bg-teal hover:bg-teal-light hover:text-teal transition-colors text-white px-8 py-4 font-display font-bold text-[11px] uppercase tracking-widest text-center shadow-lg hover:shadow-teal/20 active:scale-[0.98] duration-200">
                     Update Product
                 </button>
             </div>
