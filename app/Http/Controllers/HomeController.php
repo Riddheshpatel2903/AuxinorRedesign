@@ -36,6 +36,8 @@ class HomeController extends Controller
             'reach' => $settings['stat_reach'] ?? 'Pan-India',
         ];
 
-        return view('home', compact('heroSlides', 'settings', 'categories', 'featuredProducts', 'industries', 'recentPosts', 'stats'));
+        $sections = \App\Models\PageSection::forPage('home')->get();
+
+        return view('home', compact('heroSlides', 'settings', 'categories', 'featuredProducts', 'industries', 'recentPosts', 'stats', 'sections'));
     }
 }

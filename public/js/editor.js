@@ -9,12 +9,16 @@ function post(action, payload) {
 }
 
 function api(url, data) {
+  console.log('API Request:', url);
   return fetch(url, {
     method: 'POST',
     headers: { 'Content-Type':'application/json',
                'X-CSRF-TOKEN': CSRF, 'Accept':'application/json' },
     body: JSON.stringify(data)
-  }).then(r => r.json())
+  }).then(r => {
+    if (!r.ok) console.error('API Error:', url, r.status);
+    return r.json();
+  })
 }
 
 window.addEventListener('message', e => {
@@ -33,6 +37,7 @@ window.addEventListener('message', e => {
       payload.key === 'hero' ? 'block' : 'none'
   }
   if (action === 'element-click') {
+    if (payload.sectionId) state.sectionId = payload.sectionId;
     state.elementId = payload.id
     document.getElementById('sbEl').textContent = 'El: ' + payload.key
     document.getElementById('c-text').value = payload.content
@@ -43,7 +48,13 @@ window.addEventListener('message', e => {
     if(hrefField) {
       hrefField.style.display = (payload.tag === 'a' || payload.href) ? 'flex' : 'none';
     }
+    const imgGroup = document.getElementById('imageGroup');
+    if(imgGroup) {
+      imgGroup.style.display = (payload.tag === 'img') ? 'block' : 'none';
+    }
 
+    document.getElementById('styleEmpty').style.display = 'none'
+    document.getElementById('styleForm').style.display = 'block'
     populateControls(payload.styles)
   }
   if (action === 'deselect') {
@@ -146,7 +157,9 @@ document.getElementById('c-bgUpload')?.addEventListener('change', async function
       body: formData
     }).then(r => r.json());
     if (res.ok && res.url) {
-      document.getElementById('c-bgUrl').value = res.url;
+      const urlInput = document.getElementById('c-bgUrl');
+      urlInput.value = res.url;
+      urlInput.dispatchEvent(new Event('input')); // Trigger update
       status.textContent = 'Uploaded successfully';
       setTimeout(() => status.textContent = '', 2000);
     } else {
@@ -274,7 +287,10 @@ function buildLayers() {
     onEnd: () => {
       const order = [...tree.querySelectorAll('.ep-layer-item')]
         .map(el => el.dataset.id)
-      api(ROUTES.reorder, { order })
+      api(ROUTES.reorder, { order }).then(() => {
+        // Force reload iframe to show new DB-driven order visually
+        document.getElementById('pageFrame').contentWindow.location.reload();
+      });
     }
   })
 }
@@ -283,6 +299,8 @@ function clickLayer(id, key, label) {
   post('highlight-section', { sectionId: id })
   state.sectionId = id; state.sectionKey = key
   document.getElementById('sbSection').textContent = 'Section: ' + label
+  document.getElementById('styleEmpty').style.display = 'none'
+  document.getElementById('styleForm').style.display = 'block'
   updateLayers(id)
 }
 
@@ -372,6 +390,33 @@ document.getElementById('applyHeroSlidesBtn')?.addEventListener('click', () => {
   document.getElementById('pageFrame').contentWindow.location.reload();
   
   markDirty();
+});
+
+// Foreground Image Upload
+document.getElementById('c-imageUpload')?.addEventListener('change', async function() {
+  if (!this.files[0] || !state.elementId) return;
+  const status = document.getElementById('imageUploadStatus');
+  status.textContent = 'Uploading...';
+  const formData = new FormData();
+  formData.append('image', this.files[0]);
+  try {
+    const res = await fetch(ROUTES.upload, {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+      body: formData
+    }).then(r => r.json());
+    if (res.ok && res.url) {
+      status.textContent = 'Uploaded ✓';
+      post('apply-content', { elementId: state.elementId, src: res.url });
+      api(ROUTES.content, { section_id: state.sectionId, content: { ['el_img_'+state.elementId]: res.url } });
+      markDirty();
+      setTimeout(() => status.textContent = '', 2000);
+    } else {
+      status.textContent = 'Upload failed'; status.style.color = 'red';
+    }
+  } catch (err) {
+    status.textContent = 'Error uploading'; status.style.color = 'red';
+  }
 });
 
 buildLayers()

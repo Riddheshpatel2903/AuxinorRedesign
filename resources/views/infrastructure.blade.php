@@ -4,7 +4,7 @@
 
 @section('content')
 <!-- Hero Banner -->
-<section class="bg-gradient-to-r from-ink to-ink2 text-white py-24 px-4 md:px-8 border-b-4 border-teal relative overflow-hidden">
+<section data-section-id="{{ $sections->where('section_key', 'infra_hero')->first()->id ?? '101' }}" data-section-key="infra_hero" data-section-label="Infrastructure Hero" class="bg-gradient-to-r from-ink to-ink2 text-white py-24 px-4 md:px-8 border-b-4 border-teal relative overflow-hidden @auth cms-editable @endauth" data-cms-label="Edit Infra Hero">
     <!-- Faint grid background -->
     <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(var(--white) 1px, transparent 1px), linear-gradient(90deg, var(--white) 1px, transparent 1px); background-size: 40px 40px;"></div>
     
@@ -20,7 +20,7 @@
 </section>
 
 <!-- Warehousing -->
-<section class="py-24 px-4 md:px-8 border-b border-line bg-white sr-up">
+<section data-section-id="{{ $sections->where('section_key', 'infra_details')->first()->id ?? '102' }}" data-section-key="infra_details" data-section-label="Warehousing" class="py-24 px-4 md:px-8 border-b border-line bg-white sr-up @auth cms-editable @endauth" data-cms-label="Edit Warehousing">
     <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div>
             <span class="font-mono text-[10px] uppercase tracking-widest text-teal block mb-4">01. Storage Facilities</span>
@@ -53,7 +53,7 @@
 </section>
 
 <!-- Logistics -->
-<section class="py-24 px-4 md:px-8 border-b border-line bg-bg sr-up">
+<section data-section-id="{{ $sections->where('section_key', 'infra_details')->first()->id ?? '102' }}" data-section-key="infra_details" data-section-label="Logistics" class="py-24 px-4 md:px-8 border-b border-line bg-bg sr-up @auth cms-editable @endauth" data-cms-label="Edit Logistics">
     <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div class="order-last lg:order-first relative group">
             <div class="absolute -inset-4 bg-ink/5 transform rotate-2 transition-transform group-hover:rotate-0 border border-line"></div>
@@ -82,7 +82,7 @@
 </section>
 
 <!-- Vendor Network -->
-<section class="py-24 px-4 md:px-8 bg-white sr-up">
+<section data-section-id="{{ $sections->where('section_key', 'infra_details')->first()->id ?? '102' }}" data-section-key="infra_details" data-section-label="Procurement" class="py-24 px-4 md:px-8 bg-white sr-up @auth cms-editable @endauth" data-cms-label="Edit Procurement">
     <div class="max-w-[1000px] mx-auto text-center">
         <span class="font-mono text-[10px] uppercase tracking-widest text-teal block mb-4">03. Procurement</span>
         <h2 class="font-display font-extrabold text-[36px] md:text-[44px] leading-tight mb-8">Global <em class="font-serif italic text-teal font-normal">Vendor Network</em></h2>

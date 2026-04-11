@@ -4,7 +4,7 @@
 
 @section('content')
 <!-- Hero Banner -->
-<section class="bg-gradient-to-r from-ink to-ink2 text-white py-24 px-4 md:px-8 border-b-4 border-teal">
+<section data-section-id="{{ $sections->where('section_key', 'ind_hero')->first()->id ?? '99' }}" data-section-key="ind_hero" data-section-label="Industries Hero" class="bg-gradient-to-r from-ink to-ink2 text-white py-24 px-4 md:px-8 border-b-4 border-teal @auth cms-editable @endauth" data-cms-label="Edit Industries Hero">
     <div class="max-w-[1400px] mx-auto text-center">
         <div class="font-mono text-[10px] uppercase tracking-widest text-teal-2 mb-4">Our Reach</div>
         <h1 class="font-display font-extrabold text-[40px] md:text-[56px] leading-tight mb-4">Industries We <em class="font-serif italic font-normal text-teal-2">Serve</em></h1>
@@ -58,7 +58,7 @@
 @endphp
 
 <!-- Industry Rows -->
-<section class="bg-white">
+<section data-section-id="{{ $sections->where('section_key', 'ind_grid')->first()->id ?? '100' }}" data-section-key="ind_grid" data-section-label="Industries Grid" class="bg-white @auth cms-editable @endauth" data-cms-label="Edit Industries Grid">
     @foreach($industries as $idx => $industry)
     <div class="grid grid-cols-1 lg:grid-cols-2 {{ $idx % 2 !== 0 ? 'bg-bg border-y border-line' : '' }} min-h-[500px]">
         

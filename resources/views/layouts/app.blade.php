@@ -88,8 +88,8 @@
             });
         </script>
         @endif
-        @if(request()->has('editor_mode') && auth()->check())
-            <script src="{{ asset('js/editor-receiver.js') }}"></script>
+        @if(app('request')->input('editor_mode'))
+            <script src="{{ asset('js/editor-receiver.js') }}?v={{ time() }}"></script>
             <script>
                 document.addEventListener('click', e => {
                     const link = e.target.closest('a');
@@ -158,30 +158,32 @@
                     }
                 }
                 
-                // Section Styles
+                // Section Styles (Margin/Padding etc)
                 if (sec.styles) Object.assign(secEl.style, sec.styles);
                 
-                // Loop Content Nodes for elements
+                // Element Content & Styles
                 if (sec.content) {
                     Object.keys(sec.content).forEach(key => {
+                        let elId = '';
                         if (key.startsWith('el_href_')) {
-                            const elId = key.replace('el_href_', '');
+                            elId = key.replace('el_href_', '');
                             const node = secEl.querySelector(`[data-element-id="${elId}"]`);
                             if (node) node.href = sec.content[key];
                         } else if (key.startsWith('el_style_')) {
-                            const elId = key.replace('el_style_', '');
+                            elId = key.replace('el_style_', '');
                             const node = secEl.querySelector(`[data-element-id="${elId}"]`);
                             if (node && typeof sec.content[key] === 'object') {
                                 Object.assign(node.style, sec.content[key]);
                             }
-                        } else if (key.startsWith('el_')) {
-                            const elId = key.replace('el_', '');
+                        } else if (key.startsWith('el_img_')) {
+                            elId = key.replace('el_img_', '');
                             const node = secEl.querySelector(`[data-element-id="${elId}"]`);
-                            if (node && key !== 'el_href_'+elId && key !== 'el_style_'+elId) {
-                                // Important: We ONLY overwrite innerHTML if there's no nested content we're worried about destroying.
-                                // Actually yes, if it's a simple text element we just set it.
-                                node.innerHTML = sec.content[key];
-                            }
+                            if (node) node.src = sec.content[key];
+                        } else if (key.startsWith('el_')) {
+                            // Raw content (text)
+                            elId = key.replace('el_', '');
+                            const node = secEl.querySelector(`[data-element-id="${elId}"]`);
+                            if (node) node.innerHTML = sec.content[key];
                         }
                     });
                 }
