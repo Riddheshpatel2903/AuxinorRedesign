@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             SettingsSeeder::class,
             BlogPostSeeder::class,
             HeroSlideSeeder::class,
+            PageSectionSeeder::class,
         ]);
     }
 }
