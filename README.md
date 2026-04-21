@@ -50,7 +50,7 @@ Auxinor Chemicals is a high-performance, B2B chemical trading and distribution p
 
 ## 📊 Administration
 
-To access the admin features, navigate to `/login`.
+To access the admin features, navigate to `/admin`.
 
 ### Database Seeding
 To populate the database with initial categories, products, and page sections:
