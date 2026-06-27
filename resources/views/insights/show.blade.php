@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $post->title . ' | Market Insights | ' . ($globalSettings['company_name'] ?? 'Auxinor Chemicals'))
+@section('title', $post->title . ' | Market Insights | ' . ($globalSettings['company_name'] ?? 'Novasyn Chemicals'))
 
 @section('content')
 <!-- Article Header -->

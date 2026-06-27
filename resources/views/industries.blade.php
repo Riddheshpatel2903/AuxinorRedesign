@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Industries We Serve | ' . ($globalSettings['company_name'] ?? 'Auxinor Chemicals'))
+@section('title', 'Industries We Serve | ' . ($globalSettings['company_name'] ?? 'Novasyn Chemicals'))
 
 @section('content')
 <!-- Hero Banner -->

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'About Us | ' . ($globalSettings['company_name'] ?? 'Auxinor Chemicals'))
+@section('title', 'About Us | ' . ($globalSettings['company_name'] ?? 'Novasyn Chemicals'))
 
 @section('content')
 <!-- Hero Banner -->
@@ -12,7 +12,7 @@
     </div>
     
     <div class="max-w-[1400px] mx-auto text-center relative z-10">
- <div data-element-id="about_hero_badge" class="font-sans font-bold text-[10px] uppercase tracking-[2px] text-teal-2 mb-4">About Auxinor Chemicals</div>
+ <div data-element-id="about_hero_badge" class="font-sans font-bold text-[10px] uppercase tracking-[2px] text-teal-2 mb-4">About Novasyn Chemicals</div>
         <h1 data-element-id="about_hero_title" class="font-display font-extrabold text-[40px] md:text-[72px] leading-[1.1] mb-8">Trading With <em class="italic font-normal text-teal-2">Integrity</em></h1>
         <div class="font-sans font-medium text-[11px] uppercase tracking-wider text-white/50 space-x-2">
             <a href="{{ route('home') }}" class="hover:text-white transition-colors">Home</a>
@@ -68,7 +68,7 @@
     </div>
     
  <div class="sr-r">
-        <span data-element-id="about_advantage_badge" class="font-sans font-bold text-[10px] uppercase tracking-[2px] text-teal block mb-4">The Auxinor Advantage</span>
+        <span data-element-id="about_advantage_badge" class="font-sans font-bold text-[10px] uppercase tracking-[2px] text-teal block mb-4">The Novasyn Advantage</span>
         <h2 data-element-id="about_advantage_title" class="font-display font-extrabold text-[48px] leading-tight mb-8 text-ink">Why Partner With <em class="italic text-teal font-normal">Us?</em></h2>
         
         <div class="space-y-8">

@@ -404,7 +404,7 @@
  <div class="space-y-6 mb-12 sr-l data-delay-200">
                     <p data-element-id="about_short"
                         class="font-sans italic text-[14px] text-[#5a7080] leading-relaxed">
-                        {{ $globalSettings['about_short'] ?? 'Auxinor Chemicals LLP is a B2B chemical trading company based in Ahmedabad, Gujarat. We specialize in the procurement, trading, and distribution of industrial chemicals.' }}
+                        {{ $globalSettings['about_short'] ?? 'Novasyn Chemicals LLP is a B2B chemical trading company based in Ahmedabad, Gujarat. We specialize in the procurement, trading, and distribution of industrial chemicals.' }}
                     </p>
                     <p data-element-id="about_long"
                         class="font-sans italic text-[14px] text-[#5a7080] leading-relaxed">
@@ -574,7 +574,7 @@
                                 <a data-element-id="el_setting:email_sales"
                                     href="mailto:{{ $globalSettings['email_sales'] }}"
                                     class="font-sans text-[14px] text-white hover:text-[#a8d5cf] transition-colors">{{
-                                    $globalSettings['email_sales'] ?? 'sales@auxinorchem.com' }}</a>
+                                    $globalSettings['email_sales'] ?? 'sales@novasynchem.com' }}</a>
                             </div>
                         </li>
                     </ul>

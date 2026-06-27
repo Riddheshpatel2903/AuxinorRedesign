@@ -465,7 +465,7 @@ function showScene(sc) {
   // Footer
   document.getElementById('ftr').classList.toggle('on', sc >= 5);
   // Breadcrumb
-  document.getElementById('bc').textContent = `Auxinor Chem · ${SCENE_LABELS[sc]}`;
+  document.getElementById('bc').textContent = `Novasyn Chem · ${SCENE_LABELS[sc]}`;
   // Dots
   document.querySelectorAll('.pd').forEach((d, i) => d.classList.toggle('on', i === sc));
 }

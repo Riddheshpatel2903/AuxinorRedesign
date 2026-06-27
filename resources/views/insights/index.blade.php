@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Market Insights | ' . ($globalSettings['company_name'] ?? 'Auxinor Chemicals'))
+@section('title', 'Market Insights | ' . ($globalSettings['company_name'] ?? 'Novasyn Chemicals'))
 
 @section('content')
 <!-- Page Header -->
 <div class="bg-gradient-to-r from-ink to-ink2 text-white py-16 px-4 md:px-8 border-b-4 border-teal">
     <div class="max-w-[1400px] mx-auto text-center">
         <h1 class="font-display font-extrabold text-[40px] leading-tight mb-2">Market <em class="font-serif italic text-teal-2 font-normal">Insights</em></h1>
-        <p class="font-serif italic text-[15px] text-white/60 max-w-xl mx-auto mb-4">Trade recommendations, price intelligence, and internal news from the desk of Auxinor Chemicals.</p>
+        <p class="font-serif italic text-[15px] text-white/60 max-w-xl mx-auto mb-4">Trade recommendations, price intelligence, and internal news from the desk of Novasyn Chemicals.</p>
         <div class="font-mono text-[11px] text-white/50 space-x-2">
             <a href="{{ route('home') }}" class="hover:text-white transition-colors">Home</a>
             <span>/</span>

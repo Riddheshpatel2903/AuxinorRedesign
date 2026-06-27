@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $category->name . ' | Products | ' . ($globalSettings['company_name'] ?? 'Auxinor Chemicals'))
+@section('title', $category->name . ' | Products | ' . ($globalSettings['company_name'] ?? 'Novasyn Chemicals'))
 
 @section('content')
 <!-- Category Hero -->

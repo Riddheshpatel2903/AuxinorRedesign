@@ -7,7 +7,7 @@
                     $logoPath = !empty($globalSettings['logo_url']) ? $globalSettings['logo_url'] : 'assets/images/logo.png';
                     $logoUrl = str_starts_with($logoPath, 'http') ? $logoPath : asset($logoPath);
                 @endphp
-                <img data-element-id="el_setting:logo_url" src="{{ $logoUrl }}" alt="{{ $globalSettings['company_name'] ?? 'Auxinor' }}" class="h-full w-auto object-contain">
+                <img data-element-id="el_setting:logo_url" src="{{ $logoUrl }}" alt="{{ $globalSettings['company_name'] ?? 'Novasyn' }}" class="h-full w-auto object-contain">
             </div>
         </a>
 

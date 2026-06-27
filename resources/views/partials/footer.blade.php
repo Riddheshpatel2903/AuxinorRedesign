@@ -9,7 +9,7 @@
                             $logoPath = !empty($globalSettings['logo_url']) ? $globalSettings['logo_url'] : 'assets/images/logo.png';
                             $logoUrl = str_starts_with($logoPath, 'http') ? $logoPath : asset($logoPath);
                         @endphp
-                        <img src="{{ $logoUrl }}" alt="Auxinor Logo" class="h-full w-auto object-contain">
+                        <img src="{{ $logoUrl }}" alt="Novasyn Logo" class="h-full w-auto object-contain">
                     </div>
                 </a>
  <p data-element-id="setting:footer_tagline" class="font-sans italic text-[13px] text-white/60 mb-6 leading-relaxed">
@@ -61,7 +61,7 @@
                     </div>
                     <div>
                         <span class="block font-sans font-bold text-[9px] uppercase tracking-widest text-teal-2 mb-1">Email</span>
-                        <a href="mailto:{{ $globalSettings['email_sales'] ?? '' }}" class="font-sans font-medium text-[14px] text-white hover:text-teal-2 transition-colors block">{{ $globalSettings['email_sales'] ?? 'sales@auxinorchem.com' }}</a>
+                        <a href="mailto:{{ $globalSettings['email_sales'] ?? '' }}" class="font-sans font-medium text-[14px] text-white hover:text-teal-2 transition-colors block">{{ $globalSettings['email_sales'] ?? 'sales@novasynchem.com' }}</a>
                     </div>
                 </div>
             </div>
@@ -69,7 +69,7 @@
 
         <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center">
             <p class="font-mono text-[10px] text-white/40 mb-4 md:mb-0">
-                &copy; {{ date('Y') }} {{ $globalSettings['company_name'] ?? 'Auxinor Chemicals LLP' }}. All rights reserved.
+                &copy; {{ date('Y') }} {{ $globalSettings['company_name'] ?? 'Novasyn Chemicals LLP' }}. All rights reserved.
             </p>
             <p class="font-display text-[10px] uppercase tracking-widest text-white/30">
                 Designed for B2B Chemical Trading

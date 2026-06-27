@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $product->name . ' | Products | ' . ($globalSettings['company_name'] ?? 'Auxinor Chemicals'))
+@section('title', $product->name . ' | Products | ' . ($globalSettings['company_name'] ?? 'Novasyn Chemicals'))
 
 @section('content')
 <!-- Breadcrumbs -->

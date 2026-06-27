@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Auxinor Chemicals — Chemical Trading & Distribution')</title>
+    <title>@yield('title', 'Novasyn Chemicals — Chemical Trading & Distribution')</title>
     <meta name="description" content="@yield('meta_desc', 'Specialists in procurement, bulk distribution, and surplus chemical trading — serving India\'s top industrial sectors since 2017.')">
     
     <!-- Google Fonts -->

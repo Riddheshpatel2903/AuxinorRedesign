@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Panel') | Auxinor Chemicals</title>
+    <title>@yield('title', 'Admin Panel') | Novasyn Chemicals</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'w-64' : 'w-20'" class="admin-sidebar flex-shrink-0 transition-all duration-300 flex flex-col items-stretch sticky top-0 h-screen overflow-y-auto">
             <div class="h-16 flex items-center justify-between px-4 border-b border-gray-100 shrink-0 cursor-pointer hover:bg-gray-50 transition-colors" @click="sidebarOpen = !sidebarOpen">
-                <span x-show="sidebarOpen" class="font-display font-bold text-lg text-ink tracking-wider">AUXINOR <span class="text-teal text-xs align-top">SYS</span></span>
+                <span x-show="sidebarOpen" class="font-display font-bold text-lg text-ink tracking-wider">NOVASYN <span class="text-teal text-xs align-top">SYS</span></span>
                 <span x-show="!sidebarOpen" class="font-display font-bold text-lg text-teal mx-auto">A</span>
                 <svg x-show="sidebarOpen" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </div>
@@ -128,7 +128,7 @@
             </div>
             
             <footer class="p-4 border-t border-gray-200 text-center font-mono text-[10px] text-gray-400 uppercase tracking-widest bg-[#f4f7f6]">
-                Admin System v1.0 • Auxinor Chemicals
+                Admin System v1.0 • Novasyn Chemicals
             </footer>
         </main>
     </div>

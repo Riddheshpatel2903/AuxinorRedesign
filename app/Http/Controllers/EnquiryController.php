@@ -33,7 +33,7 @@ class EnquiryController extends Controller
 
         try {
             // Uncomment when Mailables are available
-            // Mail::to(Setting::get('email_info', 'info@auxinorchem.com'))->send(new EnquiryReceived($enquiry));
+            // Mail::to(Setting::get('email_info', 'info@novasynchem.com'))->send(new EnquiryReceived($enquiry));
             // Mail::to($enquiry->email)->send(new EnquiryConfirmation($enquiry));
         } catch (\Exception $e) {
             // Log mail error but continue

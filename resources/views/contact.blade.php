@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Contact Us | ' . ($globalSettings['company_name'] ?? 'Auxinor Chemicals'))
+@section('title', 'Contact Us | ' . ($globalSettings['company_name'] ?? 'Novasyn Chemicals'))
 
 @section('content')
 <!-- Hero -->
@@ -62,8 +62,8 @@
                         <div class="w-10 h-10 border border-teal/20 bg-teal-light flex items-center justify-center text-teal flex-shrink-0">✉️</div>
                         <div>
                             <span class="block font-sans font-bold text-[10px] uppercase tracking-widest mb-2 text-ink">Email</span>
-                            <a data-element-id="email_1" href="mailto:{{ $globalSettings['email_sales'] ?? '' }}" class="font-sans font-medium text-[13px] text-muted hover:text-teal block mb-1">{{ $globalSettings['email_sales'] ?? 'sales@auxinorchem.com' }}</a>
-                            <a data-element-id="email_2" href="mailto:{{ $globalSettings['email_info'] ?? '' }}" class="font-sans font-medium text-[13px] text-muted hover:text-teal block">{{ $globalSettings['email_info'] ?? 'info@auxinorchem.com' }}</a>
+                            <a data-element-id="email_1" href="mailto:{{ $globalSettings['email_sales'] ?? '' }}" class="font-sans font-medium text-[13px] text-muted hover:text-teal block mb-1">{{ $globalSettings['email_sales'] ?? 'sales@novasynchem.com' }}</a>
+                            <a data-element-id="email_2" href="mailto:{{ $globalSettings['email_info'] ?? '' }}" class="font-sans font-medium text-[13px] text-muted hover:text-teal block">{{ $globalSettings['email_info'] ?? 'info@novasynchem.com' }}</a>
                         </div>
                     </div>
                 </div>

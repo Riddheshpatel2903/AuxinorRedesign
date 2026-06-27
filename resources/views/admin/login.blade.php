@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login | Auxinor Chemicals</title>
+    <title>Admin Login | Novasyn Chemicals</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,7 @@
 
     <div class="relative z-10 w-full max-w-md p-8">
         <div class="text-center mb-10">
-            <h1 class="font-display font-bold text-3xl tracking-wide text-white mb-2">AUXINOR <span class="text-teal text-lg align-top">SYS</span></h1>
+            <h1 class="font-display font-bold text-3xl tracking-wide text-white mb-2">NOVASYN <span class="text-teal text-lg align-top">SYS</span></h1>
             <p class="font-mono text-[11px] uppercase tracking-widest text-white/40">Secure System Access</p>
         </div>
 
