@@ -22,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->environment('production')) {
+            \URL::forceScheme('https');
+        }
+
         View::composer('*', function($view) {
             $view->with([
                 'globalSettings' => Setting::pluck('value', 'key'),
