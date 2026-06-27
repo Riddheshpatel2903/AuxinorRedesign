@@ -32,16 +32,18 @@ class BlogPostSeeder extends Seeder
         ];
 
         foreach ($posts as $post) {
-            BlogPost::create([
-                'title' => $post['title'],
-                'slug' => Str::slug($post['title']),
-                'category' => $post['category'],
-                'excerpt' => $post['excerpt'],
-                'content' => '<p>' . $post['excerpt'] . '</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vehicula aliquet lectus vel consectetur.</p>',
-                'featured_image' => $post['image'],
-                'is_published' => true,
-                'published_at' => now()->subDays(rand(1, 30)),
-            ]);
+            BlogPost::updateOrCreate(
+                ['slug' => Str::slug($post['title'])],
+                [
+                    'title' => $post['title'],
+                    'category' => $post['category'],
+                    'excerpt' => $post['excerpt'],
+                    'content' => '<p>' . $post['excerpt'] . '</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vehicula aliquet lectus vel consectetur.</p>',
+                    'featured_image' => $post['image'],
+                    'is_published' => true,
+                    'published_at' => now()->subDays(rand(1, 30)),
+                ]
+            );
         }
     }
 }

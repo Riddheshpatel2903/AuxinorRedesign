@@ -55,17 +55,19 @@ class ProductSeeder extends Seeder
             if (!$category) continue;
 
             foreach ($items as $idx => $item) {
-                Product::create([
-                    'name' => $item['name'],
-                    'slug' => Str::slug($item['name']),
-                    'category_id' => $category->id,
-                    'chemical_formula' => $item['formula'],
-                    'cas_number' => $item['cas'],
-                    'short_description' => 'Industrial grade ' . $item['name'] . ' for manufacturing and bulk processing.',
-                    'description' => 'High quality ' . $item['name'] . ' source. Supplied in bulk containers, tankers, or drums as required.',
-                    'is_featured' => ($idx === 0), // feature first item
-                    'sort_order' => $idx,
-                ]);
+                Product::updateOrCreate(
+                    ['slug' => Str::slug($item['name'])],
+                    [
+                        'name' => $item['name'],
+                        'category_id' => $category->id,
+                        'chemical_formula' => $item['formula'],
+                        'cas_number' => $item['cas'],
+                        'short_description' => 'Industrial grade ' . $item['name'] . ' for manufacturing and bulk processing.',
+                        'description' => 'High quality ' . $item['name'] . ' source. Supplied in bulk containers, tankers, or drums as required.',
+                        'is_featured' => ($idx === 0), // feature first item
+                        'sort_order' => $idx,
+                    ]
+                );
             }
         }
     }
