@@ -41,9 +41,9 @@ RUN composer install \
 
 
 # =============================================================================
-# Stage 3: Final production image — PHP 8.3 + Nginx
+# Stage 3: Final production image — PHP 8.4 + Nginx
 # =============================================================================
-FROM php:8.3-fpm-alpine AS production
+FROM php:8.4-fpm-alpine AS production
 
 # ---- System dependencies ----
 RUN apk add --no-cache \
